@@ -13,9 +13,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
@@ -28,8 +25,7 @@ fun ChessBoardScreen() {
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("♟️ Chess Trainer", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold,
-                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
+        Text("♟️ Chess Trainer", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold))
         Text("Tap a piece to see its legal moves", color = LightGrey, fontSize = 14.sp)
         Spacer(Modifier.height(16.dp))
 
@@ -129,8 +125,7 @@ fun RealisticPieceView(piece: Piece) {
             text = if (isWhite) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol,
             color = if (isWhite) Color(0xFF000000) else Color(0xFFFFFFFF),
             fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f))
+            fontWeight = FontWeight.Bold)
         )
     }
 }

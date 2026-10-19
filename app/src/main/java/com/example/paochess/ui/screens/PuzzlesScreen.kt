@@ -11,9 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
@@ -77,11 +74,9 @@ fun PuzzlesScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("🧩 Puzzles", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold,
-                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
+        Text("🧩 Puzzles", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold))
         Spacer(Modifier.height(8.dp))
-        Text(currentPuzzle.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
+        Text(currentPuzzle.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold))
         Text(currentPuzzle.description, color = LightGrey, fontSize = 14.sp)
         
         Spacer(Modifier.height(16.dp))
@@ -139,8 +134,7 @@ fun PuzzlesScreen() {
                                         text = if (piece.color == PieceColor.WHITE) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol,
                                         color = if (piece.color == PieceColor.WHITE) Color(0xFF000000) else Color(0xFFFFFFFF),
                                         fontSize = 28.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f))
+                                        fontWeight = FontWeight.Bold)
                                     )
                                 }
                             }
@@ -154,8 +148,7 @@ fun PuzzlesScreen() {
 
         // Message
         if (resultMessage != null) {
-            Text(resultMessage!!, color = if (resultMessage!!.startsWith("✅")) Green else Red, fontSize = 18.sp, fontWeight = FontWeight.Bold,
-                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
+            Text(resultMessage!!, color = if (resultMessage!!.startsWith("✅")) Green else Red, fontSize = 18.sp, fontWeight = FontWeight.Bold))
         }
 
         Spacer(Modifier.height(16.dp))
