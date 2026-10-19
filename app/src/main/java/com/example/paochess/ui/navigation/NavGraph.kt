@@ -58,10 +58,10 @@ fun ChessNavGraph() {
     ) { padding ->
         NavHost(navController = navController, startDestination = Screen.Learn.route, modifier = Modifier.padding(padding)) {
             composable(Screen.Learn.route) { LearnScreen() }
-            composable(Screen.Openings.route) { PlaceholderScreen("Openings coming soon") }
+            composable(Screen.Openings.route) { OpeningsScreen() }
             composable(Screen.Play.route) { PlaceholderScreen("Play vs AI coming soon") }
             composable(Screen.Puzzles.route) { PuzzlesScreen() }
-            composable(Screen.Notation.route) { PlaceholderScreen("Notation sheet coming soon") }
+            composable(Screen.Notation.route) { NotationScreen() }
         }
     }
 }
