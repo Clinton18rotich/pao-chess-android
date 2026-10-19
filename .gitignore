@@ -1,0 +1,26 @@
+# Gradle
+.gradle/
+build/
+app/build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# Android
+*.apk
+*.ap_*
+*.dex
+*.class
+local.properties
+.cxx/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

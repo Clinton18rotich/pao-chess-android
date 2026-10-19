@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Red playing card background -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M34,28 h40 a4,4 0 0 1 4,4 v44 a4,4 0 0 1 -4,4 h-40 a4,4 0 0 1 -4,-4 v-44 a4,4 0 0 1 4,-4 z" />
+    <!-- White inner card -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M38,32 h32 a2,2 0 0 1 2,2 v40 a2,2 0 0 1 -2,2 h-32 a2,2 0 0 1 -2,-2 v-40 a2,2 0 0 1 2,-2 z" />
+    <!-- Heart symbol (simple path) -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M54,64 C54,64 44,56 44,50 C44,46 47,44 50,44 C52,44 54,46 54,48 C54,46 56,44 58,44 C61,44 64,46 64,50 C64,56 54,64 54,64 Z" />
+</vector>
