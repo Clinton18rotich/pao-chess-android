@@ -60,7 +60,7 @@ fun ChessNavGraph() {
             composable(Screen.Learn.route) { LearnScreen() }
             composable(Screen.Openings.route) { PlaceholderScreen("Openings coming soon") }
             composable(Screen.Play.route) { PlaceholderScreen("Play vs AI coming soon") }
-            composable(Screen.Puzzles.route) { PlaceholderScreen("Puzzles coming soon") }
+            composable(Screen.Puzzles.route) { PuzzlesScreen() }
             composable(Screen.Notation.route) { PlaceholderScreen("Notation sheet coming soon") }
         }
     }
