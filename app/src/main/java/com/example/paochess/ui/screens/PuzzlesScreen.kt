@@ -74,17 +74,13 @@ fun PuzzlesScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("🧩 Puzzles", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold))
+        Text("🧩 Puzzles", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-        Text(currentPuzzle.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold))
+        Text(currentPuzzle.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Text(currentPuzzle.description, color = LightGrey, fontSize = 14.sp)
-        
         Spacer(Modifier.height(16.dp))
 
-        // Board
-        Box(
-            modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 for (rank in 7 downTo 0) {
                     Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -105,10 +101,8 @@ fun PuzzlesScreen() {
                                         if (selectedSquare == null && piece != null && piece.color == PieceColor.WHITE) {
                                             selectedSquare = square
                                         } else if (selectedSquare != null) {
-                                            // Check if this is the correct solution
                                             if (selectedSquare == currentPuzzle.solutionFrom && square == currentPuzzle.solutionTo) {
                                                 resultMessage = "✅ CHECKMATE! Brilliant!"
-                                                // Move the piece
                                                 val newBoard = board.toMutableMap()
                                                 newBoard[square] = board[selectedSquare!!]!!
                                                 newBoard.remove(selectedSquare!!)
@@ -130,12 +124,8 @@ fun PuzzlesScreen() {
                                         PieceType.QUEEN -> "♛"
                                         PieceType.KING -> "♚"
                                     }
-                                    Text(
-                                        text = if (piece.color == PieceColor.WHITE) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol,
-                                        color = if (piece.color == PieceColor.WHITE) Color(0xFF000000) else Color(0xFFFFFFFF),
-                                        fontSize = 28.sp,
-                                        fontWeight = FontWeight.Bold)
-                                    )
+                                    val text = if (piece.color == PieceColor.WHITE) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol
+                                    Text(text = text, color = Color(0xFF000000), fontSize = 28.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -145,23 +135,16 @@ fun PuzzlesScreen() {
         }
 
         Spacer(Modifier.height(16.dp))
-
-        // Message
         if (resultMessage != null) {
-            Text(resultMessage!!, color = if (resultMessage!!.startsWith("✅")) Green else Red, fontSize = 18.sp, fontWeight = FontWeight.Bold))
+            Text(resultMessage!!, color = if (resultMessage!!.startsWith("✅")) Green else Red, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
-
         Spacer(Modifier.height(16.dp))
 
-        // Controls
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { showHint = !showHint }, colors = ButtonDefaults.buttonColors(containerColor = DarkSurface)) {
                 Text(if (showHint) "Hide Hint" else "💡 Hint", color = White)
             }
-            Button(onClick = { 
-                val nextIndex = (currentPuzzleIndex + 1) % PUZZLES.size
-                loadPuzzle(nextIndex)
-            }, colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black)) {
+            Button(onClick = { loadPuzzle((currentPuzzleIndex + 1) % PUZZLES.size) }, colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black)) {
                 Text("Next Puzzle")
             }
         }

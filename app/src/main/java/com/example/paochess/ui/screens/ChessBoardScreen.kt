@@ -9,8 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,19 +23,11 @@ fun ChessBoardScreen() {
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("♟️ Chess Trainer", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold))
+        Text("♟️ Chess Trainer", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Text("Tap a piece to see its legal moves", color = LightGrey, fontSize = 14.sp)
         Spacer(Modifier.height(16.dp))
 
-        // Realistic Wooden Board Frame
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .shadow(12.dp, shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
-                .background(Color(0xFF2B1A10)) // Dark wood frame
-                .padding(8.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 for (rank in 7 downTo 0) {
                     Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -45,11 +35,9 @@ fun ChessBoardScreen() {
                             val square = Square(file, rank)
                             val piece = board[square]
                             val isDark = (file + rank) % 2 == 1
-                            
-                            // Realistic Wood Colors
                             val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
                             val isSelected = selectedSquare == square
-                            val isLegalMove = legalMoves.contains(square)
+                            val isLegal = legalMoves.contains(square)
 
                             Box(
                                 modifier = Modifier
@@ -58,7 +46,7 @@ fun ChessBoardScreen() {
                                     .background(squareColor)
                                     .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
                                     .clickable {
-                                        if (isLegalMove) {
+                                        if (isLegal) {
                                             val newBoard = board.toMutableMap()
                                             newBoard[square] = board[selectedSquare!!]!!
                                             newBoard.remove(selectedSquare!!)
@@ -75,11 +63,11 @@ fun ChessBoardScreen() {
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isLegalMove) {
-                                    Box(modifier = Modifier.size(16.dp).background(Color(0x8000FF00), CircleShape))
+                                if (isLegal) {
+                                    Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
                                 }
                                 if (piece != null) {
-                                    RealisticPieceView(piece)
+                                    PieceView(piece)
                                 }
                             }
                         }
@@ -87,45 +75,25 @@ fun ChessBoardScreen() {
                 }
             }
         }
-
-        Spacer(Modifier.height(16.dp))
-        Text("Selected: ${selectedSquare ?: "None"}", color = LightGrey, fontSize = 14.sp)
     }
 }
 
 @Composable
-fun RealisticPieceView(piece: Piece) {
-    val isWhite = piece.color == PieceColor.WHITE
-    val woodColor = if (isWhite) Color(0xFFFFFFFF) else Color(0xFF000000)
-    val shadowColor = if (isWhite) Color(0xFFA1887F) else Color(0xFF1A0D08)
-    val highlightColor = if (isWhite) Color(0xFFFFFFFF) else Color(0xFF8D6E63)
-
-    Box(
-        modifier = Modifier
-            .size(36.dp)
-            .shadow(6.dp, CircleShape)
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(highlightColor, woodColor, shadowColor)
-                ),
-                shape = CircleShape
-            ).border(1.dp, Color(0xFF000000).copy(alpha = 0.2f), CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        val symbol = when (piece.type) {
-            PieceType.PAWN -> "♟"
-            PieceType.KNIGHT -> "♞"
-            PieceType.BISHOP -> "♝"
-            PieceType.ROOK -> "♜"
-            PieceType.QUEEN -> "♛"
-            PieceType.KING -> "♚"
-        }
-        
-        Text(
-            text = if (isWhite) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol,
-            color = if (isWhite) Color(0xFF000000) else Color(0xFFFFFFFF),
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold)
-        )
+fun PieceView(piece: Piece) {
+    val symbol = when (piece.type) {
+        PieceType.PAWN -> "♟"
+        PieceType.KNIGHT -> "♞"
+        PieceType.BISHOP -> "♝"
+        PieceType.ROOK -> "♜"
+        PieceType.QUEEN -> "♛"
+        PieceType.KING -> "♚"
     }
+    val text = if (piece.color == PieceColor.WHITE) {
+        symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗")
+            .replace("♜", "♖").replace("♛", "♕").replace("♚", "♔")
+    } else {
+        symbol
+    }
+    val color = if (piece.color == PieceColor.WHITE) Color(0xFF000000) else Color(0xFF000000)
+    Text(text = text, color = color, fontSize = 28.sp, fontWeight = FontWeight.Bold)
 }
