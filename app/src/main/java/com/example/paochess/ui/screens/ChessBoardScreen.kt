@@ -13,6 +13,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
@@ -25,7 +28,8 @@ fun ChessBoardScreen() {
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("♟️ Chess Trainer", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("♟️ Chess Trainer", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold,
+                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
         Text("Tap a piece to see its legal moves", color = LightGrey, fontSize = 14.sp)
         Spacer(Modifier.height(16.dp))
 
@@ -47,7 +51,7 @@ fun ChessBoardScreen() {
                             val isDark = (file + rank) % 2 == 1
                             
                             // Realistic Wood Colors
-                            val squareColor = if (isDark) Color(0xFF5D4037) else Color(0xFFD7CCC8)
+                            val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
                             val isSelected = selectedSquare == square
                             val isLegalMove = legalMoves.contains(square)
 
@@ -96,9 +100,9 @@ fun ChessBoardScreen() {
 @Composable
 fun RealisticPieceView(piece: Piece) {
     val isWhite = piece.color == PieceColor.WHITE
-    val woodColor = if (isWhite) Color(0xFFF5E6D3) else Color(0xFF3E2723)
+    val woodColor = if (isWhite) Color(0xFFFFFFFF) else Color(0xFF000000)
     val shadowColor = if (isWhite) Color(0xFFA1887F) else Color(0xFF1A0D08)
-    val highlightColor = if (isWhite) Color(0xFFFFFFFF) else Color(0xFF5D4037)
+    val highlightColor = if (isWhite) Color(0xFFFFFFFF) else Color(0xFF8D6E63)
 
     Box(
         modifier = Modifier
@@ -123,9 +127,10 @@ fun RealisticPieceView(piece: Piece) {
         
         Text(
             text = if (isWhite) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol,
-            color = if (isWhite) Color(0xFF3E2723) else Color(0xFFF5E6D3),
+            color = if (isWhite) Color(0xFF000000) else Color(0xFFFFFFFF),
             fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f))
         )
     }
 }

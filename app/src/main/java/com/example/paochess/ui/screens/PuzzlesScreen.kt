@@ -11,6 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
@@ -74,9 +77,11 @@ fun PuzzlesScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("🧩 Puzzles", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("🧩 Puzzles", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold,
+                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
         Spacer(Modifier.height(8.dp))
-        Text(currentPuzzle.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(currentPuzzle.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
         Text(currentPuzzle.description, color = LightGrey, fontSize = 14.sp)
         
         Spacer(Modifier.height(16.dp))
@@ -92,7 +97,7 @@ fun PuzzlesScreen() {
                             val square = Square(file, rank)
                             val piece = board[square]
                             val isDark = (file + rank) % 2 == 1
-                            val squareColor = if (isDark) Color(0xFF5D4037) else Color(0xFFD7CCC8)
+                            val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
                             val isSelected = selectedSquare == square
 
                             Box(
@@ -132,9 +137,10 @@ fun PuzzlesScreen() {
                                     }
                                     Text(
                                         text = if (piece.color == PieceColor.WHITE) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol,
-                                        color = if (piece.color == PieceColor.WHITE) Color(0xFF3E2723) else Color(0xFFF5E6D3),
+                                        color = if (piece.color == PieceColor.WHITE) Color(0xFF000000) else Color(0xFFFFFFFF),
                                         fontSize = 28.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f))
                                     )
                                 }
                             }
@@ -148,7 +154,8 @@ fun PuzzlesScreen() {
 
         // Message
         if (resultMessage != null) {
-            Text(resultMessage!!, color = if (resultMessage!!.startsWith("✅")) Green else Red, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(resultMessage!!, color = if (resultMessage!!.startsWith("✅")) Green else Red, fontSize = 18.sp, fontWeight = FontWeight.Bold,
+                                        textStyle = TextStyle(shadow = Shadow(color = Color.Black, offset = Offset(1f, 1f), blurRadius = 2f)))
         }
 
         Spacer(Modifier.height(16.dp))
