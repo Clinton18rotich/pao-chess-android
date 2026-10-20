@@ -211,7 +211,7 @@ fun PuzzlesScreen() {
             if (currentStep < moves.size) {
                 if (isTtsReady) tts?.speak(moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 while (isTtsSpeaking) { delay(100L) }
-                delay(2000L)
+                delay(4500L)
                 currentStep++
             } else {
                 isPlaying = false

@@ -102,7 +102,8 @@ fun OpeningsScreen() {
                     tts?.speak(selectedOpening.moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
                 while (isTtsSpeaking) { delay(100L) }
-                delay(1500L) 
+                // Wait 4.5 seconds after the voice finishes so you can look at the board
+                delay(4500L) 
                 currentStep++
             } else {
                 isPlaying = false
