@@ -129,20 +129,51 @@ val PUZZLES = listOf(
         "Slide the Rook to the 8th rank."
     ),
 
-    // 7. Fool's Mate — new board, engine will verify or fail
+    // 7. Fool's Mate — full position from 1.f3 e5 2.g4 Qh4#
+    // White pawns on d2/e2 block the King; f-pawn on f3 and g-pawn on g4 clear the diagonal.
     Puzzle(
         "Fool's Mate",
         "Black to move. Checkmate in 1.",
         mapOf(
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(5, 2) to Piece(PieceType.PAWN, PieceColor.WHITE),
-            Square(6, 3) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            // White back rank
+            Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(1, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE),
             Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE),
+            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
             Square(5, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE),
+            Square(6, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            // White pawns that stayed home (block King's escape squares)
+            Square(0, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(1, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(2, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(3, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(4, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(7, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            // White pawns that moved
+            Square(5, 2) to Piece(PieceType.PAWN, PieceColor.WHITE),  // f3
+            Square(6, 3) to Piece(PieceType.PAWN, PieceColor.WHITE),  // g4
+            // Black back rank
+            Square(0, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            Square(1, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK),
+            Square(2, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK),
             Square(3, 7) to Piece(PieceType.QUEEN, PieceColor.BLACK),
-            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK)
+            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(5, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK),
+            Square(6, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK),
+            Square(7, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            // Black pawns
+            Square(0, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(1, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(2, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK),  // e5
+            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK)
         ),
-        MoveStep("Black plays Qh4# — the Queen mates along the exposed diagonal to the White King.", Square(3, 7), Square(7, 3)),
+        MoveStep("Black plays Qh4# — the Queen mates along the exposed diagonal; White's own pawns block every escape.", Square(3, 7), Square(7, 3)),
         "Deliver mate on h4."
     ),
 

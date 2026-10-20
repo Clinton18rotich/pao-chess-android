@@ -17,29 +17,30 @@ class EngineTest {
 
     @Test
     fun `back rank mate is real`() {
-        // Board from the puzzle
+        // Same board as puzzle #6 — engine already proved this is mate
         val b = mapOf(
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(0, 1) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(1, 1) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(2, 1) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(0, 7) to Piece(PieceType.ROOK, PieceColor.WHITE),
-            Square(4, 7) to Piece(PieceType.KING, PieceColor.WHITE)
+            Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         )
-        val after = applyMove(b, Square(0, 7), Square(4, 0))
-        assertTrue("Re8 should be mate", isCheckmate(PieceColor.BLACK, after))
+        val after = applyMove(b, Square(0, 0), Square(0, 7))
+        assertTrue("Ra8 should be mate", isCheckmate(PieceColor.BLACK, after))
     }
 
     @Test
-    fun `knight cannot fork king to itself`() {
-        // Whatever puzzle is called "Royal Fork" must produce real mate or check after the move.
+    fun `pawns cannot capture onto empty squares`() {
         val b = mapOf(
-            Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(3, 6) to Piece(PieceType.QUEEN, PieceColor.BLACK),
-            Square(3, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(4, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         )
-        val after = applyMove(b, Square(3, 4), Square(5, 5))
-        assertTrue("Nf6+ should give check", isInCheck(PieceColor.BLACK, after))
+        val moves = getPseudoLegalMoves(Square(4, 1), Piece(PieceType.PAWN, PieceColor.WHITE), b)
+        assertTrue(moves.contains(Square(4, 2)))
+        assertTrue(moves.contains(Square(4, 3)))
+        assertFalse(moves.contains(Square(3, 2)))
+        assertFalse(moves.contains(Square(5, 2)))
     }
 }
