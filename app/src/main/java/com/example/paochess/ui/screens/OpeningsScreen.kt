@@ -35,27 +35,31 @@ val OPENINGS = listOf(
         "Italian Game",
         "A classic opening for White that fights for the center.",
         listOf(
-            MoveStep("If White moves the pawn to e4 to claim the center, then Black will move their pawn to e5 to try and stop this.", parseSquare("e2"), parseSquare("e4")),
-            MoveStep("But White will bring out the Knight to f3, attacking Black's pawn. Black will defend it by moving their Knight to c6.", parseSquare("g1"), parseSquare("f3")),
+            MoveStep("If White moves the pawn to e4 to claim the center...", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("Then Black will move their pawn to e5 to try and stop this.", parseSquare("e7"), parseSquare("e5")),
+            MoveStep("But White will bring out the Knight to f3, attacking Black's pawn.", parseSquare("g1"), parseSquare("f3")),
+            MoveStep("Black will defend it by moving their Knight to c6.", parseSquare("b8"), parseSquare("c6")),
             MoveStep("Finally, White will move the Bishop to c4 to aim at the weak f7 square, and Black cannot easily stop it. This opening is called the Italian Game.", parseSquare("f1"), parseSquare("c4"))
         )
     ),
     Opening(
         "Sicilian Defense",
-        "The most popular response to 1.e4.",
+        "The most popular response to 1.e4 — Black fights for the center asymmetrically.",
         listOf(
-            MoveStep("If White pushes the pawn to e4, then instead of copying White, Black will move the pawn to c5 to attack from the side. This opening is called the Sicilian Defense.", parseSquare("e2"), parseSquare("e4"))
+            MoveStep("If White pushes the pawn to e4 to control the center...", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("Instead of copying White, Black moves the pawn to c5 to attack from the side. This is the Sicilian Defense.", parseSquare("c7"), parseSquare("c5"))
         )
     ),
     Opening(
         "Queen's Gambit",
-        "A classical opening where White offers a pawn.",
+        "A classical opening where White offers a pawn to lure Black's center pawn away.",
         listOf(
-            MoveStep("If White pushes the pawn to d4, then Black will move their pawn to d5 to block the advance.", parseSquare("d2"), parseSquare("d4")),
-            MoveStep("But White will offer a pawn by moving to c4, which looks like a free pawn but is a trap to take over the center. This opening is called the Queen's Gambit.", parseSquare("c2"), parseSquare("c4"))
+            MoveStep("If White pushes the Queen's pawn to d4...", parseSquare("d2"), parseSquare("d4")),
+            MoveStep("Black responds by moving their pawn to d5 to block the advance.", parseSquare("d7"), parseSquare("d5")),
+            MoveStep("But White offers a pawn by moving to c4, which looks like a free pawn but is a trap to take over the center. This is the Queen's Gambit.", parseSquare("c2"), parseSquare("c4"))
         )
     )
-)
+))
 
 @Composable
 fun OpeningsScreen() {
