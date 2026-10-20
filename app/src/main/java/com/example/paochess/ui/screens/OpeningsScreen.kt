@@ -5,48 +5,145 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
+import kotlinx.coroutines.delay
+
+data class Opening(
+    val name: String,
+    val description: String,
+    val moves: List<MoveStep>
+)
+
+// Helper to convert algebraic notation to a Square (e.g., "e4" -> Square(4, 3))
+fun parseSquare(algebraic: String): Square {
+    val file = algebraic[0] - 'a'
+    val rank = algebraic[1] - '1'
+    return Square(file, rank)
+}
+
+val OPENINGS = listOf(
+    Opening(
+        name = "Italian Game",
+        description = "1. e4 e5 2. Nf3 Nc6 3. Bc4",
+        moves = listOf(
+            MoveStep("White plays e4", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("Black plays e5", parseSquare("e7"), parseSquare("e5")),
+            MoveStep("White plays Nf3", parseSquare("g1"), parseSquare("f3")),
+            MoveStep("Black plays Nc6", parseSquare("b8"), parseSquare("c6")),
+            MoveStep("White plays Bc4", parseSquare("f1"), parseSquare("c4"))
+        )
+    ),
+    Opening(
+        name = "Sicilian Defense",
+        description = "1. e4 c5",
+        moves = listOf(
+            MoveStep("White plays e4", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("Black plays c5", parseSquare("c7"), parseSquare("c5"))
+        )
+    ),
+    Opening(
+        name = "Queen's Gambit",
+        description = "1. d4 d5 2. c4",
+        moves = listOf(
+            MoveStep("White plays d4", parseSquare("d2"), parseSquare("d4")),
+            MoveStep("Black plays d5", parseSquare("d7"), parseSquare("d5")),
+            MoveStep("White plays c4", parseSquare("c2"), parseSquare("c4"))
+        )
+    )
+)
 
 @Composable
 fun OpeningsScreen() {
-    val openings = listOf(
-        "Italian Game" to "1. e4 e5 2. Nf3 Nc6 3. Bc4",
-        "Sicilian Defense" to "1. e4 c5",
-        "French Defense" to "1. e4 e6",
-        "Caro-Kann Defense" to "1. e4 c6",
-        "Ruy Lopez" to "1. e4 e5 2. Nf3 Nc6 3. Bb5",
-        "Queen's Gambit" to "1. d4 d5 2. c4",
-        "King's Indian Defense" to "1. d4 Nf6 2. c4 g6",
-        "London System" to "1. d4 d5 2. Nf3 Nf6 3. Bf4"
-    )
+    var selectedOpening by remember { mutableStateOf(OPENINGS[0]) }
+    var isPlaying by remember { mutableStateOf(false) }
+    var currentStep by remember { mutableStateOf(0) }
+
+    // Auto-play loop
+    LaunchedEffect(isPlaying, currentStep) {
+        if (isPlaying) {
+            if (currentStep < selectedOpening.moves.size) {
+                delay(1500L)
+                currentStep++
+            } else {
+                isPlaying = false
+            }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Text("📖 Chess Openings", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(16.dp))
-        Text("Memorize these famous opening sequences to start your games strong:", color = LightGrey, fontSize = 14.sp)
+        Text("📖 Openings Teacher", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
 
-        openings.forEach { (name, moves) ->
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                colors = CardDefaults.cardColors(containerColor = DarkSurface),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(name, color = Orange, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Spacer(Modifier.height(4.dp))
-                    Text(moves, color = White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                }
+        // Opening Selector
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OPENINGS.take(2).forEach { opening ->
+                Button(
+                    onClick = { selectedOpening = opening; currentStep = 0; isPlaying = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = if (selectedOpening == opening) Orange else DarkSurface, contentColor = if (selectedOpening == opening) Color.Black else White),
+                    contentPadding = PaddingValues(8.dp)
+                ) { Text(opening.name, fontSize = 12.sp) }
             }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OPENINGS.drop(2).forEach { opening ->
+                Button(
+                    onClick = { selectedOpening = opening; currentStep = 0; isPlaying = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = if (selectedOpening == opening) Orange else DarkSurface, contentColor = if (selectedOpening == opening) Color.Black else White),
+                    contentPadding = PaddingValues(8.dp)
+                ) { Text(opening.name, fontSize = 12.sp) }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Text(selectedOpening.description, color = LightGrey, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+
+        // Move Description
+        if (currentStep > 0 && currentStep <= selectedOpening.moves.size) {
+            val move = selectedOpening.moves[currentStep - 1]
+            Text(move.description, color = Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        } else {
+            Text("Tap 'Start' to see the moves.", color = LightGrey, fontSize = 14.sp)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // The Board
+        InteractiveBoard(
+            initialBoard = getInitialBoard(),
+            moves = selectedOpening.moves,
+            isPlaying = isPlaying,
+            currentStep = currentStep,
+            onStepChanged = { currentStep = it }
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        // Controls
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = { currentStep = 0; isPlaying = false },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))
+            ) { Text("Reset") }
+            
+            Button(
+                onClick = { isPlaying = !isPlaying },
+                colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black)
+            ) { Text(if (isPlaying) "Pause" else "Start Teacher") }
+            
+            Button(
+                onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
+                colors = ButtonDefaults.buttonColors(containerColor = Green)
+            ) { Text("Next Move") }
         }
     }
 }
