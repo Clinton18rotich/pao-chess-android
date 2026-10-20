@@ -203,10 +203,19 @@ fun PuzzlesScreen() {
     val context = LocalContext.current
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
+    var isTtsSpeaking by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         tts = TextToSpeech(context) { status ->
-            if (status == TextToSpeech.SUCCESS) { tts?.language = Locale.US; isTtsReady = true }
+            if (status == TextToSpeech.SUCCESS) {
+                tts?.language = Locale.US
+                tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) { isTtsSpeaking = true }
+                    override fun onDone(utteranceId: String?) { isTtsSpeaking = false }
+                    override fun onError(utteranceId: String?) { isTtsSpeaking = false }
+                })
+                isTtsReady = true 
+            }
         }
     }
     DisposableEffect(Unit) { onDispose { tts?.stop(); tts?.shutdown() } }
@@ -222,13 +231,10 @@ fun PuzzlesScreen() {
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
             if (currentStep < moves.size) {
-                // Announce the upcoming move BEFORE waiting
                 if (isTtsReady) {
-                    tts?.speak(
-                        moves[currentStep].description,
-                        TextToSpeech.QUEUE_FLUSH, null, null
-                    )
+                    tts?.speak(moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
+                while (isTtsSpeaking) { delay(100L) }
                 delay(2500L)
                 currentStep++
             } else {
