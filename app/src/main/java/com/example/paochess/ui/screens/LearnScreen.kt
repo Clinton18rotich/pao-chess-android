@@ -23,12 +23,12 @@ fun LearnScreen() {
     var selectedPieceType by remember { mutableStateOf(PieceType.PAWN) }
 
     val explanation = when (selectedPieceType) {
-        PieceType.PAWN   -> "The Pawn moves forward 1 square. On its very first move it may advance 2 squares. It captures diagonally (one square forward-left or forward-right). It can never move backward, and if it reaches the far rank it promotes (usually to a Queen)."
-        PieceType.KNIGHT -> "The Knight moves in an 'L' shape: two squares in one direction, then one square perpendicular. It is the only piece that can jump over other pieces — so pawns and blockers never stop it. From the center of the board it controls 8 squares."
-        PieceType.BISHOP -> "The Bishop moves diagonally any number of squares. Because it never leaves its color, each side begins with one light-squared Bishop and one dark-squared Bishop. Bishops love open diagonals and long-range pressure."
-        PieceType.ROOK   -> "The Rook moves in straight lines — horizontally or vertically — any number of squares. It is worth about 5 points. Rooks become very powerful on open files (no pawns blocking the column) and on the 7th rank."
-        PieceType.QUEEN  -> "The Queen combines the Rook and Bishop: she moves in straight lines OR diagonals, any number of squares. She is the strongest piece (about 9 points). In the opening, avoid bringing her out too early — she can be chased by weaker pieces."
-        PieceType.KING   -> "The King moves 1 square in any direction. He cannot move into check, and if he is checkmated the game ends. In the endgame the King becomes a fighting piece and should march toward the center."
+        PieceType.PAWN   -> "The Pawn moves forward 1 square. On its very first move it may advance 2 squares. It captures diagonally. If it reaches the far rank, it promotes."
+        PieceType.KNIGHT -> "The Knight moves in an 'L' shape: two squares in one direction, then one square perpendicular. It is the only piece that can jump over others."
+        PieceType.BISHOP -> "The Bishop moves diagonally any number of squares. It stays on the same color square for the whole game."
+        PieceType.ROOK   -> "The Rook moves in straight lines (horizontal or vertical) any number of squares. It is very powerful on open files."
+        PieceType.QUEEN  -> "The Queen is the most powerful piece. She moves in straight lines or diagonally, any number of squares."
+        PieceType.KING   -> "The King moves 1 square in any direction. You cannot move the King into check."
     }
 
     val icon = when (selectedPieceType) {
@@ -104,35 +104,65 @@ fun LearnScreen() {
         }
 
         Spacer(Modifier.height(24.dp))
-        Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
-            Column(modifier = Modifier.fillMaxSize()) {
+        
+        // --- NEW BOARD WITH COORDINATES ---
+        Box(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, bottom = 16.dp)) {
+            // Rank numbers (8 down to 1) on the left
+            Column(
+                modifier = Modifier.fillMaxHeight().width(16.dp).align(Alignment.CenterStart),
+                verticalArrangement = Arrangement.SpaceEvenly
+            ) {
                 for (rank in 7 downTo 0) {
-                    Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                        for (file in 0..7) {
-                            val square = Square(file, rank)
-                            val piece = board[square]
-                            val isDark = (file + rank) % 2 == 1
-                            val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
-                            val isLegal = legalMoves.contains(square)
-                            val isSelected = square == Square(4, 3)
-                            Box(
-                                modifier = Modifier.weight(1f).fillMaxHeight().background(squareColor)
-                                    .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
-                                if (piece != null) {
-                                    val glyph = when (piece.type) {
-                                        PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
-                                        PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
+                    Text("${rank + 1}", color = LightGrey, fontSize = 12.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+            }
+            
+            // Board and File letters
+            Column(modifier = Modifier.fillMaxWidth().padding(start = 16.dp)) {
+                Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        for (rank in 7 downTo 0) {
+                            Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                                for (file in 0..7) {
+                                    val square = Square(file, rank)
+                                    val piece = board[square]
+                                    val isDark = (file + rank) % 2 == 1
+                                    val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                    val isLegal = legalMoves.contains(square)
+                                    val isSelected = square == Square(4, 3)
+                                    Box(
+                                        modifier = Modifier.weight(1f).fillMaxHeight().background(squareColor)
+                                            .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
+                                        if (piece != null) {
+                                            val glyph = when (piece.type) {
+                                                PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
+                                                PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
+                                            }
+                                            val text = if (piece.color == PieceColor.WHITE) glyph
+                                                .replace("♟","♙").replace("♞","♘").replace("♝","♗")
+                                                .replace("♜","♖").replace("♛","♕").replace("♚","♔") else glyph
+                                            Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                        }
                                     }
-                                    val text = if (piece.color == PieceColor.WHITE) glyph
-                                        .replace("♟","♙").replace("♞","♘").replace("♝","♗")
-                                        .replace("♜","♖").replace("♛","♕").replace("♚","♔") else glyph
-                                    Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
+                    }
+                }
+                
+                // File letters (a to h) at the bottom
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                    for (file in 0..7) {
+                        Text(
+                            "${'a' + file}", 
+                            color = LightGrey, 
+                            fontSize = 12.sp, 
+                            modifier = Modifier.weight(1f), 
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                 }
             }
