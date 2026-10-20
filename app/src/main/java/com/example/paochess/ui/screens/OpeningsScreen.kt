@@ -35,28 +35,28 @@ val OPENINGS = listOf(
         "Italian Game",
         "A classic opening for White that fights for the center and aims at the weak f7 square.",
         listOf(
-            MoveStep("White plays e4 — the King's pawn advances two squares, opening the diagonal for the Queen and the f1 Bishop, and grabbing central space on d5 and f5.", parseSquare("e2"), parseSquare("e4")),
-            MoveStep("Black plays e5 — mirroring White, fighting for the center and opening lines for Black's own Queen and Bishop.", parseSquare("e7"), parseSquare("e5")),
-            MoveStep("White plays Nf3 — the Knight develops and immediately attacks the Black e5 pawn.", parseSquare("g1"), parseSquare("f3")),
-            MoveStep("Black plays Nc6 — the Knight defends the e5 pawn and adds pressure to the d4 square.", parseSquare("b8"), parseSquare("c6")),
-            MoveStep("White plays Bc4 — the Bishop eyes the f7 square, the weakest point in Black's camp. This is the Italian Game.", parseSquare("f1"), parseSquare("c4"))
+            MoveStep("First, White moves the pawn to e4, claiming the center of the board and opening lines for the Queen and Bishop.", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("To try to stop this and claim their own space, Black mirrors the move and pushes their pawn to e5.", parseSquare("e7"), parseSquare("e5")),
+            MoveStep("White brings out the Knight to f3, immediately attacking Black's e5 pawn.", parseSquare("g1"), parseSquare("f3")),
+            MoveStep("Black defends the pawn by bringing the Knight to c6.", parseSquare("b8"), parseSquare("c6")),
+            MoveStep("Finally, White moves the Bishop to c4, aiming directly at the weak f7 square. This setup is called the Italian Game, setting up a future checkmate attack.", parseSquare("f1"), parseSquare("c4"))
         )
     ),
     Opening(
         "Sicilian Defense",
-        "The most popular response to 1.e4 — Black fights for the center asymmetrically, avoiding symmetry.",
+        "The most popular response to 1.e4 — Black fights for the center asymmetrically.",
         listOf(
-            MoveStep("White plays e4 — the King's pawn takes the center.", parseSquare("e2"), parseSquare("e4")),
-            MoveStep("Black plays c5 — instead of mirroring, Black attacks d4 and creates an unbalanced, counter-attacking position.", parseSquare("c7"), parseSquare("c5"))
+            MoveStep("First, White pushes the pawn to e4 to control the center.", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("Instead of copying White, Black moves the pawn to c5. This attacks the center from the side and creates an unbalanced, dangerous counter-attacking game. This is the Sicilian Defense.", parseSquare("c7"), parseSquare("c5"))
         )
     ),
     Opening(
         "Queen's Gambit",
         "A classical opening where White offers a pawn to lure Black's center pawn away.",
         listOf(
-            MoveStep("White plays d4 — the Queen's pawn claims central space and opens the c1 Bishop's diagonal.", parseSquare("d2"), parseSquare("d4")),
-            MoveStep("Black plays d5 — Black stakes an equal claim in the center and blocks White's pawn.", parseSquare("d7"), parseSquare("d5")),
-            MoveStep("White plays c4 — the gambit: White offers the c-pawn to deflect Black's d5 pawn and dominate the center.", parseSquare("c2"), parseSquare("c4"))
+            MoveStep("First, White pushes the Queen's pawn to d4 to dominate the center.", parseSquare("d2"), parseSquare("d4")),
+            MoveStep("Black responds by moving their pawn to d5, blocking White's advance and claiming equal space.", parseSquare("d7"), parseSquare("d5")),
+            MoveStep("Now, White offers a pawn by moving to c4. It looks like a free pawn, but it is a trap to distract Black and take over the center. This is the Queen's Gambit.", parseSquare("c2"), parseSquare("c4"))
         )
     )
 )
@@ -88,23 +88,23 @@ fun OpeningsScreen() {
     DisposableEffect(Unit) {
         onDispose { tts?.stop(); tts?.shutdown() }
     }
+
+    // TTS for manual taps
     LaunchedEffect(currentStep) {
-        if (currentStep in 1..selectedOpening.moves.size && isTtsReady) {
-            tts?.speak(selectedOpening.moves[currentStep - 1].description,
-                TextToSpeech.QUEUE_FLUSH, null, null)
+        if (currentStep in 1..selectedOpening.moves.size && isTtsReady && !isPlaying) {
+            tts?.speak(selectedOpening.moves[currentStep - 1].description, TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
+
+    // Auto-play logic
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
             if (currentStep < selectedOpening.moves.size) {
-                // Announce the upcoming move FIRST, then wait
                 if (isTtsReady) {
-                    tts?.speak(
-                        selectedOpening.moves[currentStep].description,
-                        TextToSpeech.QUEUE_FLUSH, null, null
-                    )
+                    tts?.speak(selectedOpening.moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
-                delay(3000L)
+                while (isTtsSpeaking) { delay(100L) }
+                delay(2500L)
                 currentStep++
             } else {
                 isPlaying = false
@@ -148,30 +148,25 @@ fun OpeningsScreen() {
         )
         Spacer(Modifier.height(16.dp))
 
-        // Row 1
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(modifier = Modifier.weight(1f), onClick = { currentStep = 0; isPlaying = false },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))) { Text("Reset") }
-            Button(
-                modifier = Modifier.weight(1f),
-                onClick = {
+            
+            Button(modifier = Modifier.weight(1f), onClick = {
                     currentStep = 0
                     isPlaying = true
                     if (isTtsReady) {
-                        tts?.speak(
-                            selectedOpening.moves[0].description,
-                            TextToSpeech.QUEUE_FLUSH, null, null
-                        )
+                        tts?.speak(selectedOpening.moves[0].description, TextToSpeech.QUEUE_FLUSH, null, null)
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)
             ) { Text("Replay") }
         }
+        
         Spacer(Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
-                modifier = Modifier.weight(1f),
-                onClick = { isPlaying = !isPlaying },
+        
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            Button(modifier = Modifier.weight(1f), onClick = { isPlaying = !isPlaying },
                 enabled = isPlaying || currentStep < selectedOpening.moves.size,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Orange,
@@ -179,16 +174,12 @@ fun OpeningsScreen() {
                     disabledContainerColor = Color(0xFF3A2A10),
                     disabledContentColor = LightGrey
                 )
-            ) {
-                Text(if (isPlaying) "Pause" else "Start Teacher")
-            }
-            Button(
-                modifier = Modifier.weight(1f),
-                onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
+            ) { Text(if (isPlaying) "Pause" else "Start Teacher") }
+
+            Button(modifier = Modifier.weight(1f), onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
                 enabled = currentStep < selectedOpening.moves.size,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Green,
-                    contentColor = Color.Black,
                     disabledContainerColor = Color(0xFF1E3A1E),
                     disabledContentColor = LightGrey
                 )
