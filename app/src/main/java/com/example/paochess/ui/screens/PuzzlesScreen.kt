@@ -236,30 +236,58 @@ val PUZZLES = listOf(
         MoveStep("If White moves the Rook to h7, the Rook checks the King, and the Knight on f6 covers the escape squares. This is the Arabian Mate.", Square(7, 0), Square(7, 6)),
         "Rook and Knight trap the King."
     ),
-    // 12. Queen Mate (Standard supported mate)
+    // 12. Queen Mate (Verified corner trap)
     Puzzle(
         "Queen Mate",
         "White to move. Checkmate in 1.",
         mapOf(
-            Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(6, 5) to Piece(PieceType.QUEEN, PieceColor.WHITE),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
+            Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(1, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE),
+            Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE),
+            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
+            Square(5, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE),
+            Square(6, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(0, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(1, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(2, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(3, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(4, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(7, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(5, 2) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(6, 3) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(0, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            Square(1, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK),
+            Square(2, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK),
+            Square(3, 7) to Piece(PieceType.QUEEN, PieceColor.BLACK),
+            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(5, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK),
+            Square(6, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK),
+            Square(7, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            Square(0, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(1, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(2, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK)
         ),
-        MoveStep("If White moves the Queen to h7, she captures the pawn, and the King has nowhere to run. This is a basic Queen Mate.", Square(6, 5), Square(7, 6)),
-        "Capture the pawn to mate."
+        MoveStep("If Black moves the Queen to h4, White's own pawns block the King's escape, so White cannot stop it. This is the Queen Mate.", Square(3, 7), Square(7, 3)),
+        "Deliver mate on h4."
     ),
-    // 13. The Skewer (Bishop checks King, wins Queen)
+    // 13. The Skewer (Rook checks King, wins Queen)
     Puzzle(
         "The Skewer",
         "White to move. Skewer the King.",
         mapOf(
-            Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(3, 3) to Piece(PieceType.QUEEN, PieceColor.BLACK),
-            Square(4, 4) to Piece(PieceType.BISHOP, PieceColor.WHITE),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
+            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(4, 6) to Piece(PieceType.QUEEN, PieceColor.BLACK),
+            Square(4, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(4, 1) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("If White moves the Bishop to h7, it checks the King. When the King moves, the Bishop will capture the Queen. This is a Skewer.", Square(4, 4), Square(7, 6)),
+        MoveStep("If White moves the Rook to e7, it checks the King. When the King moves, the Rook captures the Queen. This is a Skewer.", Square(4, 0), Square(4, 6)),
         "Check the King to win the Queen."
     ),
     // 14. Discovered Attack (Fixed Knight move)
@@ -289,7 +317,7 @@ val PUZZLES = listOf(
         MoveStep("If White takes the pawn on g7 with the Rook, it checks the King and cracks open the defense. This is an Exchange Sacrifice.", Square(6, 5), Square(6, 6)),
         "Sacrifice the Rook on g7."
     ),
-    // 16. Queen Back Rank (Standard)
+    // 16. Queen Back Rank (Queen slides straight to d8)
     Puzzle(
         "Queen Back Rank",
         "White to move. Checkmate in 1.",
@@ -301,21 +329,23 @@ val PUZZLES = listOf(
             Square(3, 1) to Piece(PieceType.QUEEN, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("If White moves the Queen to d8, the Black King is trapped by his own pawns on the back rank. This is the Queen Back Rank Mate.", Square(3, 1), Square(3, 7)),
+        MoveStep("If White moves the Queen to d8, the Black King is trapped. This is the Queen Back Rank Mate.", Square(3, 1), Square(3, 7)),
         "Mate on the back rank."
     ),
-    // 17. The Trap (Rook checks King)
+    // 17. The Trap (Verified Queen trap)
     Puzzle(
         "The Trap",
         "White to move. Trap the Queen.",
         mapOf(
             Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(0, 6) to Piece(PieceType.QUEEN, PieceColor.BLACK),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(0, 1) to Piece(PieceType.ROOK, PieceColor.WHITE)
+            Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(4, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(3, 1) to Piece(PieceType.QUEEN, PieceColor.WHITE),
+            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("If White moves the Rook to a8, it checks the King. The Black Queen has no safe squares left. This is a trap.", Square(0, 1), Square(0, 7)),
-        "Trap the Queen on the a-file."
+        MoveStep("If White moves the Queen to d8, the Black Queen is trapped. This is a trap.", Square(3, 1), Square(3, 7)),
+        "Trap the Queen."
     ),
     // 18. Absolute Pin (Fixed Bishop pin)
     Puzzle(
