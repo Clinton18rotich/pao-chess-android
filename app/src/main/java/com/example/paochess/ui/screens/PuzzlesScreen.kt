@@ -221,7 +221,19 @@ fun PuzzlesScreen() {
     }
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
-            if (currentStep < moves.size) { delay(2500L); currentStep++ } else isPlaying = false
+            if (currentStep < moves.size) {
+                // Announce the upcoming move BEFORE waiting
+                if (isTtsReady) {
+                    tts?.speak(
+                        moves[currentStep].description,
+                        TextToSpeech.QUEUE_FLUSH, null, null
+                    )
+                }
+                delay(2500L)
+                currentStep++
+            } else {
+                isPlaying = false
+            }
         }
     }
 
@@ -254,14 +266,38 @@ fun PuzzlesScreen() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { currentStep = 0; isPlaying = false },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))) { Text("Reset") }
-            Button(onClick = { currentStep = 0; isPlaying = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)) { Text("Replay") }
-            Button(onClick = { isPlaying = !isPlaying },
-                colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black)) {
+            Button(
+                onClick = {
+                    currentStep = 0
+                    isPlaying = true
+                    // Speak immediately instead of waiting for delay
+                    if (isTtsReady) {
+                        tts?.speak(moves[0].description, TextToSpeech.QUEUE_FLUSH, null, null)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)
+            ) { Text("Replay") }
+            Button(
+                onClick = { isPlaying = !isPlaying },
+                enabled = isPlaying || currentStep < moves.size,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Orange,
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF3A2A10),
+                    disabledContentColor = LightGrey
+                )
+            ) {
                 Text(if (isPlaying) "Pause" else "Play")
             }
-            Button(onClick = { if (currentStep < moves.size) currentStep++ },
-                colors = ButtonDefaults.buttonColors(containerColor = DarkSurface)) { Text("Next") }
+            Button(
+                onClick = { if (currentStep < moves.size) currentStep++ },
+                enabled = currentStep < moves.size,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DarkSurface,
+                    disabledContainerColor = Color(0xFF2A2A2A),
+                    disabledContentColor = LightGrey
+                )
+            ) { Text("Next") }
         }
 
         Spacer(Modifier.height(16.dp))

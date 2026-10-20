@@ -90,8 +90,19 @@ fun OpeningsScreen() {
     }
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
-            if (currentStep < selectedOpening.moves.size) { delay(3000L); currentStep++ }
-            else isPlaying = false
+            if (currentStep < selectedOpening.moves.size) {
+                // Announce the upcoming move FIRST, then wait
+                if (isTtsReady) {
+                    tts?.speak(
+                        selectedOpening.moves[currentStep].description,
+                        TextToSpeech.QUEUE_FLUSH, null, null
+                    )
+                }
+                delay(3000L)
+                currentStep++
+            } else {
+                isPlaying = false
+            }
         }
     }
 
@@ -134,12 +145,41 @@ fun OpeningsScreen() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { currentStep = 0; isPlaying = false },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))) { Text("Reset") }
-            Button(onClick = { isPlaying = !isPlaying },
-                colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black)) {
+            Button(
+                onClick = {
+                    currentStep = 0
+                    isPlaying = true
+                    if (isTtsReady) {
+                        tts?.speak(
+                            selectedOpening.moves[0].description,
+                            TextToSpeech.QUEUE_FLUSH, null, null
+                        )
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)
+            ) { Text("Replay") }
+            Button(
+                onClick = { isPlaying = !isPlaying },
+                enabled = isPlaying || currentStep < selectedOpening.moves.size,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Orange,
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF3A2A10),
+                    disabledContentColor = LightGrey
+                )
+            ) {
                 Text(if (isPlaying) "Pause" else "Start Teacher")
             }
-            Button(onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
-                colors = ButtonDefaults.buttonColors(containerColor = Green)) { Text("Next Move") }
+            Button(
+                onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
+                enabled = currentStep < selectedOpening.moves.size,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Green,
+                    contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF1E3A1E),
+                    disabledContentColor = LightGrey
+                )
+            ) { Text("Next Move") }
         }
     }
 }
