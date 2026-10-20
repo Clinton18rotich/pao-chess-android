@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
+import com.example.paochess.ui.theme.*
 
 data class MoveStep(val description: String, val from: Square, val to: Square)
 
@@ -26,15 +27,15 @@ fun InteractiveBoard(
     var board by remember { mutableStateOf(initialBoard) }
     var highlightedSquare by remember { mutableStateOf<Square?>(null) }
 
-    // Play sound when step changes
+    // Play beep sound on move
     LaunchedEffect(currentStep) {
         if (currentStep > 0) {
             val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
-            toneGen.startTone(ToneGenerator.TONE_PROP_BEEP, 150) // 150ms beep
+            toneGen.startTone(ToneGenerator.TONE_PROP_BEEP, 150)
         }
     }
 
-    // Update board
+    // Update board when step changes
     LaunchedEffect(currentStep, initialBoard) {
         if (currentStep == 0) {
             board = initialBoard
