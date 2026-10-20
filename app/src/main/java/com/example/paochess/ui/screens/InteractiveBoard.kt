@@ -9,7 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,7 +30,6 @@ fun InteractiveBoard(
     var board by remember { mutableStateOf(initialBoard) }
     var highlightedSquare by remember { mutableStateOf<Square?>(null) }
 
-    // Play beep sound on move
     LaunchedEffect(currentStep) {
         if (currentStep > 0) {
             val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
@@ -35,7 +37,6 @@ fun InteractiveBoard(
         }
     }
 
-    // Update board when step changes
     LaunchedEffect(currentStep, initialBoard) {
         if (currentStep == 0) {
             board = initialBoard
@@ -65,7 +66,6 @@ fun InteractiveBoard(
                         val isDark = (file + rank) % 2 == 1
                         val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
                         val isHighlighted = highlightedSquare == square
-
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -83,8 +83,29 @@ fun InteractiveBoard(
                                     PieceType.QUEEN -> "♛"
                                     PieceType.KING -> "♚"
                                 }
-                                val text = if (piece.color == PieceColor.WHITE) symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗").replace("♜", "♖").replace("♛", "♕").replace("♚", "♔") else symbol
-                                Text(text = text, color = Color(0xFF000000), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                val text = if (piece.color == PieceColor.WHITE) {
+                                    symbol.replace("♟", "♙").replace("♞", "♘").replace("♝", "♗")
+                                          .replace("♜", "♖").replace("♛", "♕").replace("♚", "♔")
+                                } else {
+                                    symbol
+                                }
+                                
+                                // Add a shadow so black glyphs are visible on dark brown squares
+                                val shadowColor = if (piece.color == PieceColor.WHITE) Color.White else Color(0xFFAAAAAA)
+
+                                Text(
+                                    text = text, 
+                                    color = Color.Black, 
+                                    fontSize = 28.sp, 
+                                    fontWeight = FontWeight.Bold,
+                                    style = TextStyle(
+                                        shadow = Shadow(
+                                            color = shadowColor, 
+                                            offset = Offset(1.5f, 1.5f), 
+                                            blurRadius = 3f
+                                        )
+                                    )
+                                )
                             }
                         }
                     }

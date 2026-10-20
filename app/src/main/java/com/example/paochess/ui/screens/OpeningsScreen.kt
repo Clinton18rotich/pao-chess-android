@@ -142,10 +142,12 @@ fun OpeningsScreen() {
         )
         Spacer(Modifier.height(16.dp))
 
+        // Row 1
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { currentStep = 0; isPlaying = false },
+            Button(modifier = Modifier.weight(1f), onClick = { currentStep = 0; isPlaying = false },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))) { Text("Reset") }
             Button(
+                modifier = Modifier.weight(1f),
                 onClick = {
                     currentStep = 0
                     isPlaying = true
@@ -158,7 +160,11 @@ fun OpeningsScreen() {
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)
             ) { Text("Replay") }
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
+                modifier = Modifier.weight(1f),
                 onClick = { isPlaying = !isPlaying },
                 enabled = isPlaying || currentStep < selectedOpening.moves.size,
                 colors = ButtonDefaults.buttonColors(
@@ -171,6 +177,7 @@ fun OpeningsScreen() {
                 Text(if (isPlaying) "Pause" else "Start Teacher")
             }
             Button(
+                modifier = Modifier.weight(1f),
                 onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
                 enabled = currentStep < selectedOpening.moves.size,
                 colors = ButtonDefaults.buttonColors(
