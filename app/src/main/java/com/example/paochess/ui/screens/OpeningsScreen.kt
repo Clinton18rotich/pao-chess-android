@@ -33,30 +33,26 @@ fun parseSquare(algebraic: String): Square {
 val OPENINGS = listOf(
     Opening(
         "Italian Game",
-        "A classic opening for White that fights for the center and aims at the weak f7 square.",
+        "A classic opening for White that fights for the center.",
         listOf(
-            MoveStep("First, White moves the pawn to e4, claiming the center of the board and opening lines for the Queen and Bishop.", parseSquare("e2"), parseSquare("e4")),
-            MoveStep("To try to stop this and claim their own space, Black mirrors the move and pushes their pawn to e5.", parseSquare("e7"), parseSquare("e5")),
-            MoveStep("White brings out the Knight to f3, immediately attacking Black's e5 pawn.", parseSquare("g1"), parseSquare("f3")),
-            MoveStep("Black defends the pawn by bringing the Knight to c6.", parseSquare("b8"), parseSquare("c6")),
-            MoveStep("Finally, White moves the Bishop to c4, aiming directly at the weak f7 square. This setup is called the Italian Game, setting up a future checkmate attack.", parseSquare("f1"), parseSquare("c4"))
+            MoveStep("If White moves the pawn to e4 to claim the center, then Black will move their pawn to e5 to try and stop this.", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("But White will bring out the Knight to f3, attacking Black's pawn. Black will defend it by moving their Knight to c6.", parseSquare("g1"), parseSquare("f3")),
+            MoveStep("Finally, White will move the Bishop to c4 to aim at the weak f7 square, and Black cannot easily stop it. This opening is called the Italian Game.", parseSquare("f1"), parseSquare("c4"))
         )
     ),
     Opening(
         "Sicilian Defense",
-        "The most popular response to 1.e4 — Black fights for the center asymmetrically.",
+        "The most popular response to 1.e4.",
         listOf(
-            MoveStep("First, White pushes the pawn to e4 to control the center.", parseSquare("e2"), parseSquare("e4")),
-            MoveStep("Instead of copying White, Black moves the pawn to c5. This attacks the center from the side and creates an unbalanced, dangerous counter-attacking game. This is the Sicilian Defense.", parseSquare("c7"), parseSquare("c5"))
+            MoveStep("If White pushes the pawn to e4, then instead of copying White, Black will move the pawn to c5 to attack from the side. This opening is called the Sicilian Defense.", parseSquare("e2"), parseSquare("e4"))
         )
     ),
     Opening(
         "Queen's Gambit",
-        "A classical opening where White offers a pawn to lure Black's center pawn away.",
+        "A classical opening where White offers a pawn.",
         listOf(
-            MoveStep("First, White pushes the Queen's pawn to d4 to dominate the center.", parseSquare("d2"), parseSquare("d4")),
-            MoveStep("Black responds by moving their pawn to d5, blocking White's advance and claiming equal space.", parseSquare("d7"), parseSquare("d5")),
-            MoveStep("Now, White offers a pawn by moving to c4. It looks like a free pawn, but it is a trap to distract Black and take over the center. This is the Queen's Gambit.", parseSquare("c2"), parseSquare("c4"))
+            MoveStep("If White pushes the pawn to d4, then Black will move their pawn to d5 to block the advance.", parseSquare("d2"), parseSquare("d4")),
+            MoveStep("But White will offer a pawn by moving to c4, which looks like a free pawn but is a trap to take over the center. This opening is called the Queen's Gambit.", parseSquare("c2"), parseSquare("c4"))
         )
     )
 )
@@ -89,22 +85,18 @@ fun OpeningsScreen() {
         onDispose { tts?.stop(); tts?.shutdown() }
     }
 
-    // TTS for manual taps
     LaunchedEffect(currentStep) {
         if (currentStep in 1..selectedOpening.moves.size && isTtsReady && !isPlaying) {
             tts?.speak(selectedOpening.moves[currentStep - 1].description, TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
 
-    // Auto-play logic
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
             if (currentStep < selectedOpening.moves.size) {
-                if (isTtsReady) {
-                    tts?.speak(selectedOpening.moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
-                }
+                if (isTtsReady) tts?.speak(selectedOpening.moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 while (isTtsSpeaking) { delay(100L) }
-                delay(2500L)
+                delay(2000L)
                 currentStep++
             } else {
                 isPlaying = false
@@ -114,7 +106,7 @@ fun OpeningsScreen() {
 
     Column(modifier = Modifier.fillMaxSize().background(DarkBg)
         .verticalScroll(rememberScrollState()).padding(16.dp)) {
-        Text("📖 Openings Teacher", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("📖 Openings Coach", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -137,7 +129,7 @@ fun OpeningsScreen() {
         if (currentStep in 1..selectedOpening.moves.size) {
             Text(selectedOpening.moves[currentStep - 1].description, color = Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         } else {
-            Text("Tap 'Start Teacher' or 'Next Move' to step through the opening.", color = LightGrey, fontSize = 14.sp)
+            Text("Tap 'Start Teacher' to hear the coach.", color = LightGrey, fontSize = 14.sp)
         }
 
         Spacer(Modifier.height(16.dp))
@@ -151,37 +143,29 @@ fun OpeningsScreen() {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(modifier = Modifier.weight(1f), onClick = { currentStep = 0; isPlaying = false },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))) { Text("Reset") }
-            
             Button(modifier = Modifier.weight(1f), onClick = {
                     currentStep = 0
                     isPlaying = true
-                    if (isTtsReady) {
-                        tts?.speak(selectedOpening.moves[0].description, TextToSpeech.QUEUE_FLUSH, null, null)
-                    }
+                    if (isTtsReady) tts?.speak(selectedOpening.moves[0].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)
             ) { Text("Replay") }
         }
-        
         Spacer(Modifier.height(8.dp))
-        
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(modifier = Modifier.weight(1f), onClick = { isPlaying = !isPlaying },
                 enabled = isPlaying || currentStep < selectedOpening.moves.size,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Orange,
-                    contentColor = Color.Black,
-                    disabledContainerColor = Color(0xFF3A2A10),
-                    disabledContentColor = LightGrey
+                    containerColor = Orange, contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF3A2A10), disabledContentColor = LightGrey
                 )
-            ) { Text(if (isPlaying) "Pause" else "Start Teacher") }
+            ) { Text(if (isPlaying) "Pause" else "Start Coach") }
 
             Button(modifier = Modifier.weight(1f), onClick = { if (currentStep < selectedOpening.moves.size) currentStep++ },
                 enabled = currentStep < selectedOpening.moves.size,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Green,
-                    disabledContainerColor = Color(0xFF1E3A1E),
-                    disabledContentColor = LightGrey
+                    disabledContainerColor = Color(0xFF1E3A1E), disabledContentColor = LightGrey
                 )
             ) { Text("Next Move") }
         }

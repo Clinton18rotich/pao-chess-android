@@ -40,7 +40,7 @@ val PUZZLES = listOf(
             Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("First, White moves the Knight to f7, jumping right next to the King. Black's own pieces block every escape square, securing checkmate!", Square(6, 4), Square(5, 6)),
+        MoveStep("If White moves the Knight to f7, jumping right next to the King, Black's own pieces block every escape square, so Black cannot stop it. This puzzle is called the Smothered Mate.", Square(6, 4), Square(5, 6)),
         "Jump in to smother the King."
     ),
     Puzzle(
@@ -53,7 +53,7 @@ val PUZZLES = listOf(
             Square(6, 7) to Piece(PieceType.ROOK, PieceColor.WHITE),
             Square(0, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("White slides the Rook all the way to a8. The Rook controls the entire back rank, and the Knight covers the escape squares. Checkmate!", Square(6, 7), Square(0, 7)),
+        MoveStep("If White slides the Rook all the way to a8, the Rook controls the back rank, and the Knight covers the escape squares, so Black cannot stop it. This puzzle is called Anastasia's Mate.", Square(6, 7), Square(0, 7)),
         "Slide the Rook along the back rank."
     ),
     Puzzle(
@@ -66,7 +66,7 @@ val PUZZLES = listOf(
             Square(3, 5) to Piece(PieceType.QUEEN, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("White moves the Queen to e7. The Bishop covers the escape squares, trapping the King. This is a classic checkmate!", Square(3, 5), Square(4, 6)),
+        MoveStep("If White moves the Queen to e7, the Bishop covers the escape squares, trapping the King, so Black cannot stop it. This puzzle is called Legal's Mate.", Square(3, 5), Square(4, 6)),
         "Find the mate the Bishop assists."
     ),
     Puzzle(
@@ -81,7 +81,7 @@ val PUZZLES = listOf(
             Square(2, 2) to Piece(PieceType.BISHOP, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("White uses the Knight to deliver the final blow on f7. The Bishop covers the remaining escape route. Checkmate!", Square(4, 4), Square(5, 6)),
+        MoveStep("If White uses the Knight to deliver the final blow on f7, the Bishop covers the remaining escape route, so Black cannot stop it. This puzzle is called the Bishop and Knight Mate.", Square(4, 4), Square(5, 6)),
         "Knight and Bishop mate the corner."
     ),
     Puzzle(
@@ -96,7 +96,7 @@ val PUZZLES = listOf(
             Square(4, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("White jumps the Knight to g6. The Knight delivers the check, while the Rook on h8 prepares to sweep the board. Checkmate!", Square(4, 4), Square(6, 5)),
+        MoveStep("If White jumps the Knight to g6, the Knight delivers the check, while the Rook on h8 prepares to sweep the board, so Black cannot stop it. This is the start of the Windmill.", Square(4, 4), Square(6, 5)),
         "Start the discovered checks."
     ),
     Puzzle(
@@ -110,7 +110,7 @@ val PUZZLES = listOf(
             Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("White pushes the Rook to a8. The Black King is completely boxed in by their own pawns, resulting in checkmate!", Square(0, 0), Square(0, 7)),
+        MoveStep("If White pushes the Rook to a8, the Black King is completely boxed in by their own pawns, so Black cannot stop it. This puzzle is called the Back Rank Mate.", Square(0, 0), Square(0, 7)),
         "Slide the Rook to the 8th rank."
     ),
     Puzzle(
@@ -150,7 +150,7 @@ val PUZZLES = listOf(
             Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
             Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK)
         ),
-        MoveStep("Black moves the Queen to h4. White's own pawns block the King's escape. Checkmate!", Square(3, 7), Square(7, 3)),
+        MoveStep("If Black moves the Queen to h4, White's own pawns block the King's escape, so White cannot stop it. This puzzle is called the Fool's Mate.", Square(3, 7), Square(7, 3)),
         "Deliver mate on h4."
     ),
     Puzzle(
@@ -164,7 +164,7 @@ val PUZZLES = listOf(
             Square(2, 3) to Piece(PieceType.BISHOP, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("White takes the Queen to f7. The Bishop supports the Queen, and the Black King has nowhere to run. Checkmate!", Square(7, 4), Square(5, 6)),
+        MoveStep("If White takes the Queen to f7, the Bishop supports the Queen, and the Black King has nowhere to run, so Black cannot stop it. This puzzle is called the Scholar's Mate.", Square(7, 4), Square(5, 6)),
         "Strike the weak f7 square."
     )
 )
@@ -209,11 +209,9 @@ fun PuzzlesScreen() {
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
             if (currentStep < moves.size) {
-                if (isTtsReady) {
-                    tts?.speak(moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
-                }
+                if (isTtsReady) tts?.speak(moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 while (isTtsSpeaking) { delay(100L) }
-                delay(2500L)
+                delay(2000L)
                 currentStep++
             } else {
                 isPlaying = false
@@ -226,7 +224,7 @@ fun PuzzlesScreen() {
             .verticalScroll(rememberScrollState()).padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("🧩 Puzzles Teacher", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("🧩 Puzzles Coach", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
         Text("${currentPuzzleIndex + 1} / ${PUZZLES.size}  ·  ${currentPuzzle.name}",
             color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -247,42 +245,32 @@ fun PuzzlesScreen() {
         )
         Spacer(Modifier.height(16.dp))
 
-        // Row 1: Reset & Replay
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(modifier = Modifier.weight(1f), onClick = { currentStep = 0; isPlaying = false },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555))) { Text("Reset") }
             Button(modifier = Modifier.weight(1f), onClick = {
                     currentStep = 0
                     isPlaying = true
-                    if (isTtsReady) {
-                        tts?.speak(moves[0].description, TextToSpeech.QUEUE_FLUSH, null, null)
-                    }
+                    if (isTtsReady) tts?.speak(moves[0].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black)
             ) { Text("Replay") }
         }
-        
         Spacer(Modifier.height(8.dp))
-        
-        // Row 2: Play & Next Move
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(modifier = Modifier.weight(1f), onClick = { isPlaying = !isPlaying },
                 enabled = isPlaying || currentStep < moves.size,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Orange,
-                    contentColor = Color.Black,
-                    disabledContainerColor = Color(0xFF3A2A10),
-                    disabledContentColor = LightGrey
+                    containerColor = Orange, contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF3A2A10), disabledContentColor = LightGrey
                 )
             ) { Text(if (isPlaying) "Pause" else "Play") }
             
             Button(modifier = Modifier.weight(1f), onClick = { if (currentStep < moves.size) currentStep++ },
                 enabled = currentStep < moves.size,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Green,
-                    contentColor = Color.Black,
-                    disabledContainerColor = Color(0xFF2A2A2A),
-                    disabledContentColor = LightGrey
+                    containerColor = Green, contentColor = Color.Black,
+                    disabledContainerColor = Color(0xFF2A2A2A), disabledContentColor = LightGrey
                 )
             ) { Text("Next Move") }
         }
