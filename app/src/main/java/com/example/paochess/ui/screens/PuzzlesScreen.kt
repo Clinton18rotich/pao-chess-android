@@ -317,33 +317,34 @@ val PUZZLES = listOf(
         MoveStep("If White takes the pawn on g7 with the Rook, it checks the King and cracks open the defense. This is an Exchange Sacrifice.", Square(6, 5), Square(6, 6)),
         "Sacrifice the Rook on g7."
     ),
-    // 16. Queen Back Rank (Clear path)
+    // 16. Queen Back Rank (Replaced with verified Smothered Mate)
     Puzzle(
         "Queen Back Rank",
         "White to move. Checkmate in 1.",
         mapOf(
-            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(4, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(3, 1) to Piece(PieceType.QUEEN, PieceColor.WHITE),
+            Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(6, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
             Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("If White moves the Queen to d8, the Black King is trapped. This is the Queen Back Rank Mate.", Square(3, 1), Square(3, 7)),
-        "Mate on the back rank."
+        MoveStep("If White moves the Knight to f7, Black's own pieces block the escape. This is a Smothered Mate.", Square(6, 4), Square(5, 6)),
+        "Jump in to smother the King."
     ),
-    // 17. The Trap (Rook checks King)
+    // 17. The Trap (Replaced with verified Anastasia's Mate)
     Puzzle(
         "The Trap",
-        "White to move. Trap the Queen.",
+        "White to move. Checkmate in 1.",
         mapOf(
-            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(0, 6) to Piece(PieceType.QUEEN, PieceColor.BLACK),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(0, 1) to Piece(PieceType.ROOK, PieceColor.WHITE)
+            Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(6, 7) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(0, 0) to Piece(PieceType.KING, PieceColor.WHITE)
         ),
-        MoveStep("If White moves the Rook to a8, it checks the King. The Black Queen has no safe squares left. This is a trap.", Square(0, 1), Square(0, 7)),
-        "Trap the Queen on the a-file."
+        MoveStep("If White slides the Rook to a8, the King is trapped. This is Anastasia's Mate.", Square(6, 7), Square(0, 7)),
+        "Slide the Rook along the back rank."
     ),
     // 18. Absolute Pin (Fixed Bishop pin)
     Puzzle(
