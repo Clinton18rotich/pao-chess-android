@@ -22,7 +22,7 @@ import com.example.paochess.ui.theme.*
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Learn : Screen("learn", "Learn", Icons.Filled.School)
     object Openings : Screen("openings", "Openings", Icons.Filled.MenuBook)
-    object Play : Screen("play", "Play", Icons.Filled.PlayArrow)
+    object Play : Screen("play", "Practice", Icons.Filled.PlayArrow)
     object Puzzles : Screen("puzzles", "Puzzles", Icons.Filled.Extension)
     object Notation : Screen("notation", "Notation", Icons.Filled.List)
 }
@@ -59,7 +59,7 @@ fun ChessNavGraph() {
         NavHost(navController = navController, startDestination = Screen.Learn.route, modifier = Modifier.padding(padding)) {
             composable(Screen.Learn.route) { LearnScreen() }
             composable(Screen.Openings.route) { OpeningsScreen() }
-            composable(Screen.Play.route) { PlaceholderScreen("Play vs AI coming soon") }
+            composable(Screen.Play.route) { PracticeScreen() }
             composable(Screen.Puzzles.route) { PuzzlesScreen() }
             composable(Screen.Notation.route) { NotationScreen() }
         }
