@@ -25,7 +25,7 @@ import java.util.Locale
 fun PracticeScreen() {
     var isTacticsMode by remember { mutableStateOf(true) }
     
-    // Pick a random puzzle on launch
+    // Pulls from the full PUZZLES list (now 18 items)
     var currentPuzzle by remember { mutableStateOf(PUZZLES.random()) }
     var selectedSquare by remember { mutableStateOf<Square?>(null) }
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
@@ -96,7 +96,7 @@ fun PracticeScreen() {
         }
 
         // --- TACTICS MODE UI ---
-        Text("Find the checkmate in 1!", color = White, fontSize = 16.sp)
+        Text("Find the checkmate in 1! (${PUZZLES.size} puzzles loaded)", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
         if (isSolved) {
@@ -131,18 +131,26 @@ fun PracticeScreen() {
                                         
                                         if (isLegal) {
                                             if (selectedSquare == currentPuzzle.solution.from && square == currentPuzzle.solution.to) {
+                                                // Correct!
                                                 board = applyMove(board, selectedSquare!!, square)
                                                 isSolved = true
-                                                if (isTtsReady) tts?.speak("Correct! ${currentPuzzle.solution.description}", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                if (isTtsReady) {
+                                                    tts?.speak("Correct! ${currentPuzzle.solution.description}", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                }
                                             } else {
+                                                // Wrong move
                                                 selectedSquare = null
                                                 legalMoves = emptyList()
-                                                if (isTtsReady) tts?.speak("Try again. Look for a forcing checkmate.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                if (isTtsReady) {
+                                                    tts?.speak("Try again. Look for a forcing checkmate.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                }
                                             }
                                         } else if (piece != null && piece.color == PieceColor.WHITE) {
+                                            // Select a new piece
                                             selectedSquare = square
                                             legalMoves = getLegalMoves(square, piece, board)
                                         } else {
+                                            // Deselect if tapping empty space
                                             selectedSquare = null
                                             legalMoves = emptyList()
                                         }
