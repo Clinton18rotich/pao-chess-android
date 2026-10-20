@@ -35,7 +35,7 @@ val OPENINGS = listOf(
         "Italian Game",
         "A classic opening for White that fights for the center.",
         listOf(
-            MoveStep("If White moves the pawn to e4 to claim the center...", parseSquare("e2"), parseSquare("e4")),
+            MoveStep("First, if White moves the pawn to e4 to claim the center...", parseSquare("e2"), parseSquare("e4")),
             MoveStep("Then Black will move their pawn to e5 to try and stop this.", parseSquare("e7"), parseSquare("e5")),
             MoveStep("But White will bring out the Knight to f3, attacking Black's pawn.", parseSquare("g1"), parseSquare("f3")),
             MoveStep("Black will defend it by moving their Knight to c6.", parseSquare("b8"), parseSquare("c6")),
@@ -59,7 +59,7 @@ val OPENINGS = listOf(
             MoveStep("But White offers a pawn by moving to c4, which looks like a free pawn but is a trap to take over the center. This is the Queen's Gambit.", parseSquare("c2"), parseSquare("c4"))
         )
     )
-))
+)
 
 @Composable
 fun OpeningsScreen() {
@@ -98,9 +98,11 @@ fun OpeningsScreen() {
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
             if (currentStep < selectedOpening.moves.size) {
-                if (isTtsReady) tts?.speak(selectedOpening.moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
+                if (isTtsReady) {
+                    tts?.speak(selectedOpening.moves[currentStep].description, TextToSpeech.QUEUE_FLUSH, null, null)
+                }
                 while (isTtsSpeaking) { delay(100L) }
-                delay(2000L)
+                delay(1500L) 
                 currentStep++
             } else {
                 isPlaying = false
