@@ -126,7 +126,6 @@ fun LearnScreen() {
         Text("📖 Learn Chess", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
 
-        // Top Buttons
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             for (i in 0..4) {
                 Button(onClick = { selectedTab = i }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedTab == i) Orange else DarkSurface), contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)) {
@@ -154,97 +153,87 @@ fun LearnScreen() {
         if (showBoard) {
             Spacer(Modifier.height(16.dp))
             
-            // --- FIXED BOARD LAYOUT WITH NUMBERS ---
-            Box(modifier = Modifier.fillMaxWidth().padding(start = 20.dp)) {
-                // Numbers Column
-                Column(
-                    modifier = Modifier.width(20.dp).fillMaxHeight(),
-                    verticalArrangement = Arrangement.SpaceEvenly
-                ) {
+            // --- BULLETPROOF BOARD LAYOUT ---
+            Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+                Column(modifier = Modifier.fillMaxSize()) {
                     for (rank in 7 downTo 0) {
-                        Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                            Text("${rank + 1}", color = LightGrey, fontSize = 12.sp)
-                        }
-                    }
-                }
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            // 1. The Rank Number (Fixed)
+                            Box(modifier = Modifier.width(16.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                                Text("${rank + 1}", color = LightGrey, fontSize = 12.sp)
+                            }
+                            
+                            // 2. The 8 Squares for this rank
+                            for (file in 0..7) {
+                                val square = Square(file, rank)
+                                
+                                var displayPiece = currentBoard[square]
+                                if (selectedTab == 7) { // Castling
+                                    if (specialStep >= 1 && square == Square(6, 0)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE)
+                                    if (specialStep >= 1 && square == Square(4, 0)) displayPiece = null
+                                    if (specialStep >= 2 && square == Square(5, 0)) displayPiece = Piece(PieceType.ROOK, PieceColor.WHITE)
+                                    if (specialStep >= 2 && square == Square(7, 0)) displayPiece = null
+                                }
+                                if (selectedTab == 8) { // En Passant
+                                    if (specialStep >= 1 && square == Square(3, 5)) displayPiece = Piece(PieceType.PAWN, PieceColor.WHITE)
+                                    if (specialStep >= 1 && square == Square(4, 4)) displayPiece = null
+                                    if (specialStep >= 1 && square == Square(3, 4)) displayPiece = null
+                                }
+                                if (selectedTab == 9) { // Capture
+                                    if (specialStep >= 1 && square == Square(6, 5)) displayPiece = Piece(PieceType.KNIGHT, PieceColor.WHITE)
+                                    if (specialStep >= 1 && square == Square(4, 3)) displayPiece = null
+                                }
 
-                // Chess Board
-                Column(modifier = Modifier.fillMaxWidth().padding(start = 20.dp)) {
-                    Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
-                        Column(modifier = Modifier.fillMaxSize()) {
-                            for (rank in 7 downTo 0) {
-                                Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                                    for (file in 0..7) {
-                                        val square = Square(file, rank)
-                                        
-                                        var displayPiece = currentBoard[square]
-                                        if (selectedTab == 7) { // Castling
-                                            if (specialStep >= 1 && square == Square(6, 0)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE)
-                                            if (specialStep >= 1 && square == Square(4, 0)) displayPiece = null
-                                            if (specialStep >= 2 && square == Square(5, 0)) displayPiece = Piece(PieceType.ROOK, PieceColor.WHITE)
-                                            if (specialStep >= 2 && square == Square(7, 0)) displayPiece = null
-                                        }
-                                        if (selectedTab == 8) { // En Passant
-                                            if (specialStep >= 1 && square == Square(3, 5)) displayPiece = Piece(PieceType.PAWN, PieceColor.WHITE)
-                                            if (specialStep >= 1 && square == Square(4, 4)) displayPiece = null
-                                            if (specialStep >= 1 && square == Square(3, 4)) displayPiece = null
-                                        }
-                                        if (selectedTab == 9) { // Capture
-                                            if (specialStep >= 1 && square == Square(6, 5)) displayPiece = Piece(PieceType.KNIGHT, PieceColor.WHITE)
-                                            if (specialStep >= 1 && square == Square(4, 3)) displayPiece = null
-                                        }
+                                val isDark = (file + rank) % 2 == 1
+                                val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                val isLegal = legalMoves.contains(square)
+                                val isSelected = selectedSquare == square
 
-                                        val isDark = (file + rank) % 2 == 1
-                                        val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
-                                        val isLegal = legalMoves.contains(square)
-                                        val isSelected = selectedSquare == square
-
-                                        Box(
-                                            modifier = Modifier.weight(1f).fillMaxHeight().background(squareColor)
-                                                .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
-                                                .clickable {
-                                                    if (selectedTab < 6 || selectedTab == 9) {
-                                                        if (isLegal) {
-                                                            val newB = currentBoard.toMutableMap()
-                                                            newB[square] = currentBoard[selectedSquare!!]!!
-                                                            newB.remove(selectedSquare!!)
-                                                            currentBoard = newB
-                                                            selectedSquare = null
-                                                            legalMoves = emptyList()
-                                                            
-                                                            if (selectedTab == 9 && square == Square(6, 5)) {
-                                                                if (isTtsReady) tts?.speak("Excellent! You captured the pawn.", TextToSpeech.QUEUE_FLUSH, null, null)
-                                                            }
-                                                        } else if (displayPiece != null && displayPiece.color == PieceColor.WHITE) {
-                                                            selectedSquare = square
-                                                            legalMoves = getLegalMoves(square, displayPiece, currentBoard)
-                                                        } else {
-                                                            selectedSquare = null
-                                                            legalMoves = emptyList()
-                                                        }
+                                Box(
+                                    modifier = Modifier.weight(1f).fillMaxHeight().background(squareColor)
+                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
+                                        .clickable {
+                                            if (selectedTab < 6 || selectedTab == 9) {
+                                                if (isLegal) {
+                                                    val newB = currentBoard.toMutableMap()
+                                                    newB[square] = currentBoard[selectedSquare!!]!!
+                                                    newB.remove(selectedSquare!!)
+                                                    currentBoard = newB
+                                                    selectedSquare = null
+                                                    legalMoves = emptyList()
+                                                    
+                                                    if (selectedTab == 9 && square == Square(6, 5)) {
+                                                        if (isTtsReady) tts?.speak("Excellent! You captured the pawn.", TextToSpeech.QUEUE_FLUSH, null, null)
                                                     }
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
-                                            if (displayPiece != null) {
-                                                val glyph = when (displayPiece.type) {
-                                                    PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
-                                                    PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
+                                                } else if (displayPiece != null && displayPiece.color == PieceColor.WHITE) {
+                                                    selectedSquare = square
+                                                    legalMoves = getLegalMoves(square, displayPiece, currentBoard)
+                                                } else {
+                                                    selectedSquare = null
+                                                    legalMoves = emptyList()
                                                 }
-                                                val text = if (displayPiece.color == PieceColor.WHITE) glyph.replace("♟","♙").replace("♞","♘").replace("♝","♗").replace("♜","♖").replace("♛","♕").replace("♚","♔") else glyph
-                                                val shadowColor = if (displayPiece.color == PieceColor.WHITE) Color.White else Color(0xFFAAAAAA)
-                                                Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold, style = TextStyle(shadow = Shadow(color = shadowColor, offset = Offset(1.5f, 1.5f), blurRadius = 3f)))
                                             }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
+                                    if (displayPiece != null) {
+                                        val glyph = when (displayPiece.type) {
+                                            PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
+                                            PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
                                         }
+                                        val text = if (displayPiece.color == PieceColor.WHITE) glyph.replace("♟","♙").replace("♞","♘").replace("♝","♗").replace("♜","♖").replace("♛","♕").replace("♚","♔") else glyph
+                                        val shadowColor = if (displayPiece.color == PieceColor.WHITE) Color.White else Color(0xFFAAAAAA)
+                                        Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold, style = TextStyle(shadow = Shadow(color = shadowColor, offset = Offset(1.5f, 1.5f), blurRadius = 3f)))
                                     }
                                 }
                             }
                         }
                     }
                     
-                    // Letters Row
-                    Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                    // File Letters (a-h) at the bottom of the board
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.width(16.dp)) // align with squares
                         for (file in 0..7) {
                             Text("${'a' + file}", color = LightGrey, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                         }
@@ -253,7 +242,7 @@ fun LearnScreen() {
             }
             
             if (selectedTab < 6 || selectedTab == 9) {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(16.dp))
                 Button(onClick = { selectedTab = -1; selectedTab = 0 }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)), modifier = Modifier.fillMaxWidth()) {
                     Text("Reset Board")
                 }
