@@ -29,7 +29,6 @@ import java.util.Locale
 
 @Composable
 fun LearnScreen() {
-    // 0-5 = Pieces, 6 = Endgame, 7 = Castling, 8 = En Passant, 9 = Capture
     var selectedTab by remember { mutableStateOf(0) }
 
     val explanations = listOf(
@@ -42,20 +41,17 @@ fun LearnScreen() {
         "How the game ends: You win by Checkmate (trapping the King). The game is a Draw if it's a Stalemate (no legal moves but not in check), or if there is insufficient material to mate, or a 50-move rule.",
         "Castling: The King moves two squares toward the Rook, and the Rook jumps to the other side. It is a great way to protect your King.",
         "En Passant: If an enemy Pawn moves two squares and lands next to your Pawn, you can capture it as if it had only moved one square.",
-        "Capture: To capture a piece, you move your piece onto the square occupied by the enemy piece. Tap the White Knight, then tap the Black Pawn to capture it!"
+        "Capture: To capture a piece, you move your piece onto the square occupied by the enemy piece. Watch the Knight capture the Pawn."
     )
 
     val icons = listOf("♙", "♘", "♗", "♖", "♕", "♔", "🏁", "🏰", "👻", "⚔️")
     val buttonGlyphs = listOf("♙", "♘", "♗", "♖", "♕", "♔", "🏁", "🏰", "👻", "⚔️")
 
-    val showBoard = selectedTab != 6 // Show board for all except Endgame
+    val showBoard = selectedTab != 6 
 
-    // --- INTERACTIVE STATE ---
     var currentBoard by remember { mutableStateOf(mapOf<Square, Piece>()) }
     var selectedSquare by remember { mutableStateOf<Square?>(null) }
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
-
-    // --- SPECIAL MOVE ANIMATION STATE ---
     var specialStep by remember { mutableStateOf(0) }
 
     val context = LocalContext.current
@@ -73,7 +69,6 @@ fun LearnScreen() {
         }
     }
 
-    // Setup the board based on the selected tab
     LaunchedEffect(selectedTab) {
         selectedSquare = null
         legalMoves = emptyList()
@@ -94,30 +89,32 @@ fun LearnScreen() {
             }
             selectedTab == 7 -> { // Castling
                 currentBoard = mapOf(
-                    Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), // e1
-                    Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), // h1
+                    Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), 
+                    Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), 
                 )
                 if (isTtsReady) tts?.speak("White castles kingside. The King moves two squares, and the Rook jumps over.", TextToSpeech.QUEUE_FLUSH, null, null)
                 delay(2500L)
-                specialStep = 1 // King moves to g1
+                specialStep = 1 
                 delay(1500L)
-                specialStep = 2 // Rook moves to f1
+                specialStep = 2 
             }
             selectedTab == 8 -> { // En Passant
                 currentBoard = mapOf(
-                    Square(4, 4) to Piece(PieceType.PAWN, PieceColor.WHITE), // e5
-                    Square(3, 4) to Piece(PieceType.PAWN, PieceColor.BLACK), // d5
+                    Square(4, 4) to Piece(PieceType.PAWN, PieceColor.WHITE), 
+                    Square(3, 4) to Piece(PieceType.PAWN, PieceColor.BLACK), 
                 )
                 if (isTtsReady) tts?.speak("Black just moved their pawn two squares. White can capture it En Passant.", TextToSpeech.QUEUE_FLUSH, null, null)
                 delay(2500L)
-                specialStep = 1 // White pawn captures to d6, black pawn removed
+                specialStep = 1 
             }
             selectedTab == 9 -> { // Capture Practice
                 currentBoard = mapOf(
-                    Square(4, 3) to Piece(PieceType.KNIGHT, PieceColor.WHITE), // e4
-                    Square(6, 5) to Piece(PieceType.PAWN, PieceColor.BLACK),   // g6
+                    Square(4, 3) to Piece(PieceType.KNIGHT, PieceColor.WHITE), 
+                    Square(6, 5) to Piece(PieceType.PAWN, PieceColor.BLACK),   
                 )
-                if (isTtsReady) tts?.speak("To capture, move your piece onto the enemy piece. Tap the White Knight, then tap the Black Pawn.", TextToSpeech.QUEUE_FLUSH, null, null)
+                if (isTtsReady) tts?.speak("To capture, move your piece onto the enemy piece. Watch the Knight capture the Pawn.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2500L)
+                specialStep = 1
             }
         }
     }
@@ -129,7 +126,7 @@ fun LearnScreen() {
         Text("📖 Learn Chess", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
 
-        // Buttons (Rows of 5)
+        // Top Buttons
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             for (i in 0..4) {
                 Button(onClick = { selectedTab = i }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedTab == i) Orange else DarkSurface), contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)) {
@@ -157,16 +154,21 @@ fun LearnScreen() {
         if (showBoard) {
             Spacer(Modifier.height(16.dp))
             
-            // --- BOARD ---
-            Box(modifier = Modifier.fillMaxWidth().padding(start = 20.dp, bottom = 20.dp)) {
-                // Rank Numbers
-                Column(modifier = Modifier.fillMaxHeight().width(20.dp).align(Alignment.CenterStart), verticalArrangement = Arrangement.SpaceEvenly) {
+            // --- FIXED BOARD LAYOUT WITH NUMBERS ---
+            Box(modifier = Modifier.fillMaxWidth().padding(start = 20.dp)) {
+                // Numbers Column
+                Column(
+                    modifier = Modifier.width(20.dp).fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
                     for (rank in 7 downTo 0) {
-                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) { Text("${rank + 1}", color = LightGrey, fontSize = 12.sp) }
+                        Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Text("${rank + 1}", color = LightGrey, fontSize = 12.sp)
+                        }
                     }
                 }
 
-                // The Board
+                // Chess Board
                 Column(modifier = Modifier.fillMaxWidth().padding(start = 20.dp)) {
                     Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
                         Column(modifier = Modifier.fillMaxSize()) {
@@ -175,7 +177,6 @@ fun LearnScreen() {
                                     for (file in 0..7) {
                                         val square = Square(file, rank)
                                         
-                                        // Animation logic for Special Moves
                                         var displayPiece = currentBoard[square]
                                         if (selectedTab == 7) { // Castling
                                             if (specialStep >= 1 && square == Square(6, 0)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE)
@@ -184,9 +185,13 @@ fun LearnScreen() {
                                             if (specialStep >= 2 && square == Square(7, 0)) displayPiece = null
                                         }
                                         if (selectedTab == 8) { // En Passant
-                                            if (specialStep >= 1 && square == Square(3, 5)) displayPiece = Piece(PieceType.PAWN, PieceColor.WHITE) // White pawn to d6
-                                            if (specialStep >= 1 && square == Square(4, 4)) displayPiece = null // White pawn left e5
-                                            if (specialStep >= 1 && square == Square(3, 4)) displayPiece = null // Black pawn captured
+                                            if (specialStep >= 1 && square == Square(3, 5)) displayPiece = Piece(PieceType.PAWN, PieceColor.WHITE)
+                                            if (specialStep >= 1 && square == Square(4, 4)) displayPiece = null
+                                            if (specialStep >= 1 && square == Square(3, 4)) displayPiece = null
+                                        }
+                                        if (selectedTab == 9) { // Capture
+                                            if (specialStep >= 1 && square == Square(6, 5)) displayPiece = Piece(PieceType.KNIGHT, PieceColor.WHITE)
+                                            if (specialStep >= 1 && square == Square(4, 3)) displayPiece = null
                                         }
 
                                         val isDark = (file + rank) % 2 == 1
@@ -207,7 +212,6 @@ fun LearnScreen() {
                                                             selectedSquare = null
                                                             legalMoves = emptyList()
                                                             
-                                                            // If they just completed the capture tutorial
                                                             if (selectedTab == 9 && square == Square(6, 5)) {
                                                                 if (isTtsReady) tts?.speak("Excellent! You captured the pawn.", TextToSpeech.QUEUE_FLUSH, null, null)
                                                             }
@@ -239,7 +243,7 @@ fun LearnScreen() {
                         }
                     }
                     
-                    // File Letters
+                    // Letters Row
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                         for (file in 0..7) {
                             Text("${'a' + file}", color = LightGrey, fontSize = 12.sp, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
