@@ -50,8 +50,6 @@ fun PracticeScreen() {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.US
-                tts?.setPitch(0.6f)
-                tts?.setSpeechRate(0.9f)
                 isTtsReady = true
             }
         }
@@ -64,7 +62,7 @@ fun PracticeScreen() {
         legalMoves = emptyList()
         isSolved = false
         practiceStep = 0
-        if (isTtsReady) tts?.speak("Find the checkmate in one move.", TextToSpeech.QUEUE_FLUSH, null, null)
+        if (isTtsReady) tts?.speak("Find the checkmate move.", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     fun resetAIGame() {
@@ -76,6 +74,7 @@ fun PracticeScreen() {
         lastAiTaunt = ""
     }
 
+    // AI TURN LOGIC
     LaunchedEffect(isAiThinking) {
         if (isAiThinking) {
             delay(600L)
@@ -85,7 +84,10 @@ fun PracticeScreen() {
                 gameStatus = "Your turn (White)"
                 if (bestMove.taunt.isNotEmpty()) {
                     lastAiTaunt = bestMove.taunt
-                    if (isTtsReady) tts?.speak(bestMove.taunt, TextToSpeech.QUEUE_FLUSH, null, null)
+                    if (isTtsReady) {
+                        tts?.setPitch(0.6f) // Arrogant male voice for AI
+                        tts?.speak(bestMove.taunt, TextToSpeech.QUEUE_FLUSH, null, null)
+                    }
                 } else {
                     lastAiTaunt = ""
                 }
@@ -104,33 +106,33 @@ fun PracticeScreen() {
         Text("🎯 Practice", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
 
+        // Mode Toggle Buttons
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
-                onClick = { isTacticsMode = true; resetPuzzle() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isTacticsMode) Orange else DarkSurface,
-                    contentColor = if (isTacticsMode) Color.Black else White
-                ),
+                onClick = { isTacticsMode = true; resetPuzzle(); if (isTtsReady) tts?.setPitch(1.15f) },
+                colors = ButtonDefaults.buttonColors(containerColor = if (isTacticsMode) Orange else DarkSurface, contentColor = if (isTacticsMode) Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("Tactics") }
-
+            
             Button(
                 onClick = { isTacticsMode = false; resetAIGame() },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!isTacticsMode) Orange else DarkSurface,
-                    contentColor = if (!isTacticsMode) Color.Black else White
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = if (!isTacticsMode) Orange else DarkSurface, contentColor = if (!isTacticsMode) Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("Play vs AI") }
         }
 
         Spacer(Modifier.height(24.dp))
 
+        // ==========================================
+        // AI MODE UI
+        // ==========================================
         if (!isTacticsMode) {
             Text(gameStatus, color = if (isAiThinking) LightGrey else Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            
             if (lastAiTaunt.isNotEmpty()) {
                 Text("🤖 \"$lastAiTaunt\"", color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
             }
+            
             Spacer(Modifier.height(16.dp))
 
             Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
@@ -153,6 +155,7 @@ fun PracticeScreen() {
                                         .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
                                         .clickable {
                                             if (isAiThinking) return@clickable
+                                            
                                             if (isLegal) {
                                                 aiBoard = applyMove(aiBoard, aiSelectedSquare!!, square)
                                                 aiSelectedSquare = null
@@ -178,17 +181,17 @@ fun PracticeScreen() {
                     }
                 }
             }
-
+            
             Spacer(Modifier.height(16.dp))
-            Button(onClick = { resetAIGame() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
-                modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { resetAIGame() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)), modifier = Modifier.fillMaxWidth()) {
                 Text("Restart Game")
             }
             return@Column
         }
 
-        // TACTICS MODE
+        // ==========================================
+        // TACTICS MODE UI
+        // ==========================================
         Text("Find the checkmate in 1! (${PUZZLES.size} puzzles loaded)", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
@@ -220,7 +223,7 @@ fun PracticeScreen() {
                                     .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
                                     .clickable {
                                         if (isSolved) return@clickable
-
+                                        
                                         if (isLegal) {
                                             if (practiceStep >= currentPuzzle.solution.size) return@clickable
                                             val expectedMove = currentPuzzle.solution[practiceStep]
@@ -229,16 +232,17 @@ fun PracticeScreen() {
                                             if (isWhiteMove && selectedSquare == expectedMove.from && square == expectedMove.to) {
                                                 puzzleBoard = applyMove(puzzleBoard, selectedSquare!!, square)
                                                 practiceStep++
+                                                
                                                 if (practiceStep >= currentPuzzle.solution.size) {
                                                     isSolved = true
-                                                    if (isTtsReady) tts?.speak("Correct! Checkmate delivered.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    if (isTtsReady) tts?.speak("Correct! You found the tactic.", TextToSpeech.QUEUE_FLUSH, null, null)
                                                 } else {
                                                     val nextMove = currentPuzzle.solution[practiceStep]
                                                     if (!nextMove.description.contains("White", ignoreCase = true)) {
                                                         puzzleBoard = applyMove(puzzleBoard, nextMove.from, nextMove.to)
                                                         practiceStep++
                                                     }
-                                                    if (isTtsReady) tts?.speak("Good. Now continue the attack.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    if (isTtsReady) tts?.speak("Good. Keep going.", TextToSpeech.QUEUE_FLUSH, null, null)
                                                 }
                                             } else {
                                                 selectedSquare = null
@@ -301,9 +305,7 @@ private fun RenderPiece(piece: Piece, size: androidx.compose.ui.unit.TextUnit) {
         text = text, color = Color.Black, fontSize = size, fontWeight = FontWeight.Bold,
         style = androidx.compose.ui.text.TextStyle(
             shadow = androidx.compose.ui.graphics.Shadow(
-                color = shadowColor,
-                offset = androidx.compose.ui.geometry.Offset(1.5f, 1.5f),
-                blurRadius = 3f
+                color = shadowColor, offset = androidx.compose.ui.geometry.Offset(1.5f, 1.5f), blurRadius = 3f
             )
         )
     )
