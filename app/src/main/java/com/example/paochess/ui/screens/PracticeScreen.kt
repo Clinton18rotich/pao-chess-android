@@ -19,22 +19,43 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
+import kotlinx.coroutines.delay
 import java.util.Locale
 
 @Composable
 fun PracticeScreen() {
     var isTacticsMode by remember { mutableStateOf(true) }
-    
-    // Pulls from the full PUZZLES list (now 18 items)
+
+    // TACTICS STATE
     var currentPuzzle by remember { mutableStateOf(PUZZLES.random()) }
     var selectedSquare by remember { mutableStateOf<Square?>(null) }
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
     var isSolved by remember { mutableStateOf(false) }
-    var board by remember { mutableStateOf(currentPuzzle.board) }
+    var practiceStep by remember { mutableStateOf(0) }
+    var puzzleBoard by remember { mutableStateOf(currentPuzzle.board) }
+
+    // AI STATE
+    var aiBoard by remember { mutableStateOf(getInitialBoard()) }
+    var aiSelectedSquare by remember { mutableStateOf<Square?>(null) }
+    var aiLegalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
+    var isAiThinking by remember { mutableStateOf(false) }
+    var gameStatus by remember { mutableStateOf("Your turn (White)") }
+    var lastAiTaunt by remember { mutableStateOf("") }
 
     val context = LocalContext.current
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
+
+    val encouragingPhrases = listOf(
+        "Excellent! That's exactly it.",
+        "Beautifully spotted. Keep going.",
+        "You're starting to see the patterns. Nice work.",
+        "Exactly! The trap is set.",
+        "Brilliant. You're thinking like a grandmaster.",
+        "Perfect. That's the move.",
+        "Well done! You saw right through their defense.",
+        "Superb. Keep that up."
+    )
 
     LaunchedEffect(Unit) {
         tts = TextToSpeech(context) { status ->
@@ -47,11 +68,49 @@ fun PracticeScreen() {
 
     fun resetPuzzle() {
         currentPuzzle = PUZZLES.random()
-        board = currentPuzzle.board
+        puzzleBoard = currentPuzzle.board
         selectedSquare = null
         legalMoves = emptyList()
         isSolved = false
-        if (isTtsReady) tts?.speak("Find the checkmate in one move.", TextToSpeech.QUEUE_FLUSH, null, null)
+        practiceStep = 0
+        if (isTtsReady) {
+            tts?.setPitch(1.15f) // Soft female coach
+            tts?.speak("Find the checkmate move.", TextToSpeech.QUEUE_FLUSH, null, null)
+        }
+    }
+
+    fun resetAIGame() {
+        aiBoard = getInitialBoard()
+        aiSelectedSquare = null
+        aiLegalMoves = emptyList()
+        isAiThinking = false
+        gameStatus = "Your turn (White)"
+        lastAiTaunt = ""
+    }
+
+    // AI TURN LOGIC
+    LaunchedEffect(isAiThinking) {
+        if (isAiThinking) {
+            delay(600L)
+            // The villain AI uses ChessAI to find the best move and generate a taunt
+            val bestMove = ChessAI.getBestMove(aiBoard, PieceColor.BLACK)
+            if (bestMove != null) {
+                aiBoard = applyMove(aiBoard, bestMove.from, bestMove.to)
+                gameStatus = "Your turn (White)"
+                if (bestMove.taunt.isNotEmpty()) {
+                    lastAiTaunt = bestMove.taunt
+                    if (isTtsReady) {
+                        tts?.setPitch(0.6f) // Arrogant male AI
+                        tts?.speak(bestMove.taunt, TextToSpeech.QUEUE_FLUSH, null, null)
+                    }
+                } else {
+                    lastAiTaunt = ""
+                }
+            } else {
+                gameStatus = "Checkmate or Stalemate!"
+            }
+            isAiThinking = false
+        }
     }
 
     Column(
@@ -62,7 +121,7 @@ fun PracticeScreen() {
         Text("🎯 Practice", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
 
-        // Mode Toggle Buttons
+        // Mode Toggle
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
                 onClick = { isTacticsMode = true; resetPuzzle() },
@@ -71,7 +130,7 @@ fun PracticeScreen() {
             ) { Text("Tactics") }
             
             Button(
-                onClick = { isTacticsMode = false },
+                onClick = { isTacticsMode = false; resetAIGame() },
                 colors = ButtonDefaults.buttonColors(containerColor = if (!isTacticsMode) Orange else DarkSurface, contentColor = if (!isTacticsMode) Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("Play vs AI") }
@@ -79,23 +138,75 @@ fun PracticeScreen() {
 
         Spacer(Modifier.height(24.dp))
 
+        // ==========================================
+        // AI MODE UI (THE VILLAIN)
+        // ==========================================
         if (!isTacticsMode) {
-            // AI Placeholder
-            Box(
-                modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(DarkSurface).border(2.dp, Orange),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🤖", fontSize = 48.sp)
-                    Spacer(Modifier.height(16.dp))
-                    Text("Play vs AI", color = White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("Coming soon in a future update!", color = LightGrey, fontSize = 14.sp)
+            Text(gameStatus, color = if (isAiThinking) LightGrey else Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            
+            if (lastAiTaunt.isNotEmpty()) {
+                Text("🤖 \"$lastAiTaunt\"", color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+            }
+            
+            Spacer(Modifier.height(16.dp))
+
+            Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    for (rank in 7 downTo 0) {
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            for (file in 0..7) {
+                                val square = Square(file, rank)
+                                val piece = aiBoard[square]
+                                val isDark = (file + rank) % 2 == 1
+                                val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                val isSelected = aiSelectedSquare == square
+                                val isLegal = aiLegalMoves.contains(square)
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .background(squareColor)
+                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
+                                        .clickable {
+                                            if (isAiThinking) return@clickable
+                                            
+                                            if (isLegal) {
+                                                aiBoard = applyMove(aiBoard, aiSelectedSquare!!, square)
+                                                aiSelectedSquare = null
+                                                aiLegalMoves = emptyList()
+                                                isAiThinking = true
+                                            } else if (piece != null && piece.color == PieceColor.WHITE) {
+                                                aiSelectedSquare = square
+                                                aiLegalMoves = getLegalMoves(square, piece, aiBoard)
+                                            } else {
+                                                aiSelectedSquare = null
+                                                aiLegalMoves = emptyList()
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
+                                    if (piece != null) {
+                                        RenderPiece(piece, size = 28.sp)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+            
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = { resetAIGame() }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)), modifier = Modifier.fillMaxWidth()) {
+                Text("Restart Game")
             }
             return@Column
         }
 
-        // --- TACTICS MODE UI ---
+        // ==========================================
+        // TACTICS MODE UI (THE COACH)
+        // ==========================================
         Text("Find the checkmate in 1! (${PUZZLES.size} puzzles loaded)", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
 
@@ -107,14 +218,13 @@ fun PracticeScreen() {
 
         Spacer(Modifier.height(16.dp))
 
-        // Interactive Board
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
             Column(modifier = Modifier.fillMaxSize()) {
                 for (rank in 7 downTo 0) {
                     Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
                         for (file in 0..7) {
                             val square = Square(file, rank)
-                            val piece = board[square]
+                            val piece = puzzleBoard[square]
                             val isDark = (file + rank) % 2 == 1
                             val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
                             val isSelected = selectedSquare == square
@@ -130,27 +240,41 @@ fun PracticeScreen() {
                                         if (isSolved) return@clickable
                                         
                                         if (isLegal) {
-                                            if (selectedSquare == currentPuzzle.solution.from && square == currentPuzzle.solution.to) {
-                                                // Correct!
-                                                board = applyMove(board, selectedSquare!!, square)
-                                                isSolved = true
-                                                if (isTtsReady) {
-                                                    tts?.speak("Correct! ${currentPuzzle.solution.description}", TextToSpeech.QUEUE_FLUSH, null, null)
+                                            if (practiceStep >= currentPuzzle.solution.size) return@clickable
+                                            val expectedMove = currentPuzzle.solution[practiceStep]
+                                            
+                                            // In multi-move puzzles, we only check if the player's move matches the solution
+                                            if (selectedSquare == expectedMove.from && square == expectedMove.to) {
+                                                puzzleBoard = applyMove(puzzleBoard, selectedSquare!!, square)
+                                                practiceStep++
+                                                
+                                                if (practiceStep >= currentPuzzle.solution.size) {
+                                                    isSolved = true
+                                                    if (isTtsReady) {
+                                                        val praise = encouragingPhrases.random()
+                                                        tts?.speak(praise, TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    }
+                                                } else {
+                                                    // Auto-play Black's response silently
+                                                    val nextMove = currentPuzzle.solution[practiceStep]
+                                                    if (nextMove.description.contains("Black", ignoreCase = true)) {
+                                                        puzzleBoard = applyMove(puzzleBoard, nextMove.from, nextMove.to)
+                                                        practiceStep++
+                                                    }
+                                                    if (isTtsReady) {
+                                                        val praise = encouragingPhrases.random()
+                                                        tts?.speak(praise, TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    }
                                                 }
                                             } else {
-                                                // Wrong move
                                                 selectedSquare = null
                                                 legalMoves = emptyList()
-                                                if (isTtsReady) {
-                                                    tts?.speak("Try again. Look for a forcing checkmate.", TextToSpeech.QUEUE_FLUSH, null, null)
-                                                }
+                                                if (isTtsReady) tts?.speak("Try again. Follow the sequence.", TextToSpeech.QUEUE_FLUSH, null, null)
                                             }
                                         } else if (piece != null && piece.color == PieceColor.WHITE) {
-                                            // Select a new piece
                                             selectedSquare = square
-                                            legalMoves = getLegalMoves(square, piece, board)
+                                            legalMoves = getLegalMoves(square, piece, puzzleBoard)
                                         } else {
-                                            // Deselect if tapping empty space
                                             selectedSquare = null
                                             legalMoves = emptyList()
                                         }
@@ -159,24 +283,7 @@ fun PracticeScreen() {
                             ) {
                                 if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
                                 if (piece != null) {
-                                    val symbol = when (piece.type) {
-                                        PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
-                                        PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
-                                    }
-                                    val text = if (piece.color == PieceColor.WHITE) {
-                                        symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
-                                              .replace("♜","♖").replace("♛","♕").replace("♚","♔")
-                                    } else symbol
-                                    
-                                    val shadowColor = if (piece.color == PieceColor.WHITE) Color.White else Color(0xFFAAAAAA)
-                                    Text(
-                                        text = text, color = Color.Black, fontSize = 28.sp, fontWeight = FontWeight.Bold,
-                                        style = androidx.compose.ui.text.TextStyle(
-                                            shadow = androidx.compose.ui.graphics.Shadow(
-                                                color = shadowColor, offset = androidx.compose.ui.geometry.Offset(1.5f, 1.5f), blurRadius = 3f
-                                            )
-                                        )
-                                    )
+                                    RenderPiece(piece, size = 28.sp)
                                 }
                             }
                         }
@@ -202,4 +309,28 @@ fun PracticeScreen() {
             modifier = Modifier.fillMaxWidth()
         ) { Text(if (isSolved) "Next Puzzle ➡️" else "Skip to Next Puzzle") }
     }
+}
+
+@Composable
+private fun RenderPiece(piece: Piece, size: androidx.compose.ui.unit.TextUnit) {
+    val symbol = when (piece.type) {
+        PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
+        PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
+    }
+    val text = if (piece.color == PieceColor.WHITE) {
+        symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
+            .replace("♜","♖").replace("♛","♕").replace("♚","♔")
+    } else symbol
+
+    val shadowColor = if (piece.color == PieceColor.WHITE) Color.White else Color(0xFFAAAAAA)
+    Text(
+        text = text, color = Color.Black, fontSize = size, fontWeight = FontWeight.Bold,
+        style = androidx.compose.ui.text.TextStyle(
+            shadow = androidx.compose.ui.graphics.Shadow(
+                color = shadowColor,
+                offset = androidx.compose.ui.geometry.Offset(1.5f, 1.5f),
+                blurRadius = 3f
+            )
+        )
+    )
 }
