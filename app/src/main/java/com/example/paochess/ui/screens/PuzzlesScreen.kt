@@ -29,7 +29,6 @@ data class Puzzle(
 )
 
 val PUZZLES = listOf(
-
     // 1. Smothered Mate
     Puzzle(
         "Smothered Mate",
@@ -175,43 +174,43 @@ val PUZZLES = listOf(
         "Deliver mate on h4."
     ),
     // 9-18: Copies of the verified mates under different names
-    Puzzle("Double Attack", "White to move. Checkmate in 1.", 
+    Puzzle("Double Attack", "White to move. Checkmate in 1.",
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White moves the Knight to f7, Black's own pieces block the escape. This is a Smothered Mate.", Square(6, 4), Square(5, 6)),
         "Jump in to smother the King."),
-    Puzzle("Corner Trap", "White to move. Checkmate in 1.", 
+    Puzzle("Corner Trap", "White to move. Checkmate in 1.",
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White slides the Rook to a8, the Knight covers the escape. This is Anastasia's Mate.", Square(6, 7), Square(0, 7)),
         "Slide the Rook along the back rank."),
-    Puzzle("Queen Assault", "White to move. Checkmate in 1.", 
+    Puzzle("Queen Assault", "White to move. Checkmate in 1.",
         mapOf(Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(5, 5) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(3, 5) to Piece(PieceType.QUEEN, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White moves the Queen to e7, the Bishop covers the escape. This is Legal's Mate.", Square(3, 5), Square(4, 6)),
         "Find the mate the Bishop assists."),
-    Puzzle("Royal Flush", "White to move. Checkmate in 1.", 
+    Puzzle("Royal Flush", "White to move. Checkmate in 1.",
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(4, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(2, 2) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White jumps the Knight to f7, the Bishop covers the escape. This is the Bishop and Knight Mate.", Square(4, 4), Square(5, 6)),
         "Knight and Bishop mate the corner."),
-    Puzzle("Discover Check", "White to move. Begin the windmill.", 
+    Puzzle("Discover Check", "White to move. Begin the windmill.",
         mapOf(Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(7, 5) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(7, 7) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(4, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White jumps the Knight to g6, the Knight checks and the Rook sweeps. This is the Windmill.", Square(4, 4), Square(6, 5)),
         "Start the discovered checks."),
-    Puzzle("Corner Mate", "White to move. Checkmate in 1.", 
+    Puzzle("Corner Mate", "White to move. Checkmate in 1.",
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 5) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White moves the Rook to h7, the Knight covers the escape. This is the Arabian Mate.", Square(7, 0), Square(7, 6)),
         "Rook and Knight trap the King."),
-    Puzzle("Sweeping Rook", "White to move. Checkmate in 1.", 
+    Puzzle("Sweeping Rook", "White to move. Checkmate in 1.",
         mapOf(Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White pushes the Rook to a8, the King is trapped. This is the Back Rank Mate.", Square(0, 0), Square(0, 7)),
         "Slide the Rook to the 8th rank."),
-    Puzzle("Immediate Mate", "Black to move. Checkmate in 1.", 
+    Puzzle("Immediate Mate", "Black to move. Checkmate in 1.",
         mapOf(Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(1, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(5, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(6, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(1, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(2, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(3, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(4, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(7, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(5, 2) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(6, 3) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(0, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(1, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK), Square(2, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK), Square(3, 7) to Piece(PieceType.QUEEN, PieceColor.BLACK), Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK), Square(6, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK), Square(7, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(0, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(1, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(2, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK)),
         MoveStep("If Black moves the Queen to h4, White's own pawns block the escape. This is the Fool's Mate.", Square(3, 7), Square(7, 3)),
         "Deliver mate on h4."),
-    Puzzle("Knight Trap", "White to move. Checkmate in 1.", 
+    Puzzle("Knight Trap", "White to move. Checkmate in 1.",
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White moves the Knight to f7, Black's own pieces block the escape. This is a Smothered Mate.", Square(6, 4), Square(5, 6)),
         "Jump in to smother the King."),
-    Puzzle("Final Rook", "White to move. Checkmate in 1.", 
+    Puzzle("Final Rook", "White to move. Checkmate in 1.",
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White slides the Rook to a8, the Knight covers the escape. This is Anastasia's Mate.", Square(6, 7), Square(0, 7)),
         "Slide the Rook along the back rank.")
@@ -253,12 +252,12 @@ fun PuzzlesScreen() {
             tts?.speak(moves[currentStep - 1].description, TextToSpeech.QUEUE_FLUSH, null, null)
         }
     }
-    
+
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
             if (currentStep < moves.size) {
                 currentStep++
-                delay(1000L) 
+                delay(1000L)
                 if (isTtsReady) tts?.speak(moves[currentStep - 1].description, TextToSpeech.QUEUE_FLUSH, null, null)
                 while (isTtsSpeaking) { delay(100L) }
                 delay(2000L)
@@ -275,7 +274,7 @@ fun PuzzlesScreen() {
     ) {
         Text("🧩 Puzzles Coach", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-        Text("${currentPuzzleIndex + 1} / ${PUZZLES.size}  ·  ${currentPuzzle.name}",
+        Text("${currentPuzzleIndex + 1} / ${PUZZLES.size} · ${currentPuzzle.name}",
             color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Text(currentPuzzle.description, color = LightGrey, fontSize = 14.sp)
         Spacer(Modifier.height(16.dp))
@@ -314,7 +313,7 @@ fun PuzzlesScreen() {
                     disabledContainerColor = Color(0xFF3A2A10), disabledContentColor = LightGrey
                 )
             ) { Text(if (isPlaying) "Pause" else "Play") }
-            
+
             Button(modifier = Modifier.weight(1f), onClick = { if (currentStep < moves.size) currentStep++ },
                 enabled = currentStep < moves.size,
                 colors = ButtonDefaults.buttonColors(
