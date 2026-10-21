@@ -133,21 +133,46 @@ val PUZZLES = listOf(
         MoveStep("If White pushes the Rook to a8, the Black King is trapped by their own pawns. This is the Back Rank Mate.", Square(0, 0), Square(0, 7)),
         "Slide the Rook to the 8th rank."
     ),
-    // 16. Scholar's Mate (Full Game - White plays)
+    // 8. Fool's Mate
     Puzzle(
-        "Scholar's Mate (Full Game)",
-        "White to move. Trap Black in 4 moves.",
-        getInitialBoard(),
-        listOf(
-            MoveStep("Move 1 (White): e4. White claims the center.", Square(4, 1), Square(4, 3)),
-            MoveStep("Move 2 (Black): e5. Black mirrors.", Square(4, 6), Square(4, 4)),
-            MoveStep("Move 3 (White): Bc4. The Bishop targets the weak f7 square.", Square(5, 0), Square(2, 3)),
-            MoveStep("Move 4 (Black): Nc6. Black defends normally.", Square(1, 7), Square(2, 5)),
-            MoveStep("Move 5 (White): Qh5. Threatening checkmate on f7.", Square(3, 0), Square(7, 4)),
-            MoveStep("Move 6 (Black): Nf6. The final blunder.", Square(6, 7), Square(5, 5)),
-            MoveStep("Move 7 (White): Qxf7#. Checkmate!", Square(7, 4), Square(5, 6))
+        "Fool's Mate",
+        "Black to move. Checkmate in 1.",
+        mapOf(
+            Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(1, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE),
+            Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE),
+            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
+            Square(5, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE),
+            Square(6, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE),
+            Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
+            Square(0, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(1, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(2, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(3, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(4, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(7, 1) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(5, 2) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(6, 3) to Piece(PieceType.PAWN, PieceColor.WHITE),
+            Square(0, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            Square(1, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK),
+            Square(2, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK),
+            Square(3, 7) to Piece(PieceType.QUEEN, PieceColor.BLACK),
+            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
+            Square(5, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK),
+            Square(6, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK),
+            Square(7, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
+            Square(0, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(1, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(2, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
+            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK)
         ),
-        "Play the Scholar's Mate. Punish Black for not defending f7."
+        MoveStep("If Black moves the Queen to h4, White's own pawns block the escape. This is the Fool's Mate.", Square(3, 7), Square(7, 3)),
+        "Deliver mate on h4."
     ),
     // 9-18: Copies of the verified mates under different names
     Puzzle("Double Attack", "White to move. Checkmate in 1.", 
@@ -178,6 +203,10 @@ val PUZZLES = listOf(
         mapOf(Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White pushes the Rook to a8, the King is trapped. This is the Back Rank Mate.", Square(0, 0), Square(0, 7)),
         "Slide the Rook to the 8th rank."),
+    Puzzle("Immediate Mate", "Black to move. Checkmate in 1.", 
+        mapOf(Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(1, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(5, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(6, 0) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(1, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(2, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(3, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(4, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(7, 1) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(5, 2) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(6, 3) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(0, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(1, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK), Square(2, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK), Square(3, 7) to Piece(PieceType.QUEEN, PieceColor.BLACK), Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(5, 7) to Piece(PieceType.BISHOP, PieceColor.BLACK), Square(6, 7) to Piece(PieceType.KNIGHT, PieceColor.BLACK), Square(7, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(0, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(1, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(2, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK)),
+        MoveStep("If Black moves the Queen to h4, White's own pawns block the escape. This is the Fool's Mate.", Square(3, 7), Square(7, 3)),
+        "Deliver mate on h4."),
     Puzzle("Knight Trap", "White to move. Checkmate in 1.", 
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.BLACK), Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White moves the Knight to f7, Black's own pieces block the escape. This is a Smothered Mate.", Square(6, 4), Square(5, 6)),
@@ -186,97 +215,6 @@ val PUZZLES = listOf(
         mapOf(Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK), Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK), Square(6, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(6, 7) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 0) to Piece(PieceType.KING, PieceColor.WHITE)),
         MoveStep("If White slides the Rook to a8, the Knight covers the escape. This is Anastasia's Mate.", Square(6, 7), Square(0, 7)),
         "Slide the Rook along the back rank.")
-    // 18. The Knight's Tour (Multi-move)
-    Puzzle(
-        "The Knight's Tour",
-        "White to move. Trap the King in 3 moves.",
-        mapOf(
-            Square(7, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(6, 7) to Piece(PieceType.ROOK, PieceColor.BLACK),
-            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(4, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE)
-        ),
-        listOf(
-            MoveStep("Move 1 (White): Nf6. The Knight attacks the escape squares.", Square(4, 4), Square(5, 5)),
-            MoveStep("Move 2 (Black): The King is forced to move.", Square(7, 7), Square(7, 6)),
-            MoveStep("Move 3 (White): Nf7#. Checkmate! The Knight smothers the King.", Square(5, 5), Square(5, 6))
-        ),
-        "Guide the Knight to the mating square."
-    ),
-    // 19. The Rook Sweep (Multi-move)
-    Puzzle(
-        "The Rook Sweep",
-        "White to move. Sweep the board in 3 moves.",
-        mapOf(
-            Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
-            Square(1, 0) to Piece(PieceType.ROOK, PieceColor.WHITE)
-        ),
-        listOf(
-            MoveStep("Move 1 (White): Ra8+. The first Rook invades the back rank.", Square(0, 0), Square(0, 7)),
-            MoveStep("Move 2 (Black): The King is forced to move.", Square(6, 7), Square(7, 7)),
-            MoveStep("Move 3 (White): Rb8#. The second Rook follows up for mate.", Square(1, 0), Square(1, 7))
-        ),
-        "Line up both Rooks on the back rank."
-    ),
-    // 20. The Bishop Strike (Multi-move)
-    Puzzle(
-        "The Bishop Strike",
-        "White to move. Strike diagonally in 3 moves.",
-        mapOf(
-            Square(6, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(6, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(7, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(2, 2) to Piece(PieceType.BISHOP, PieceColor.WHITE),
-            Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE)
-        ),
-        listOf(
-            MoveStep("Move 1 (White): Qg6. The Queen sacrifices herself to open the diagonal.", Square(3, 0), Square(6, 6)),
-            MoveStep("Move 2 (Black): Kxg6. The King captures the Queen.", Square(6, 7), Square(6, 6)),
-            MoveStep("Move 3 (White): Bd5#. The Bishop delivers the final blow.", Square(2, 2), Square(3, 3))
-        ),
-        "Sacrifice the Queen to open the Bishop's path."
-    ),
-    // 21. The Double Rook (Multi-move)
-    Puzzle(
-        "The Double Rook",
-        "White to move. Deliver a double check in 3 moves.",
-        mapOf(
-            Square(4, 7) to Piece(PieceType.KING, PieceColor.BLACK),
-            Square(3, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(4, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(5, 6) to Piece(PieceType.PAWN, PieceColor.BLACK),
-            Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE),
-            Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE),
-            Square(4, 4) to Piece(PieceType.KNIGHT, PieceColor.WHITE)
-        ),
-        listOf(
-            MoveStep("Move 1 (White): Nf6+. The Knight checks the King.", Square(4, 4), Square(5, 5)),
-            MoveStep("Move 2 (Black): Kd8. The King must move.", Square(4, 7), Square(3, 7)),
-            MoveStep("Move 3 (White): Re8#. The Rook delivers mate.", Square(0, 0), Square(4, 0))
-        ),
-        "Use the Knight to uncover the Rook."
-    )
-    // 18. Lichess Mate in 2 (Verified)
-    Puzzle(
-        "Lichess Mate in 2",
-        "White to move. Find the forced mate.",
-        com.example.paochess.data.FenParser.parseFen("6k1/5ppp/8/8/8/8/5PPP/4R1K1 w - - 0 1"),
-        listOf(
-            com.example.paochess.data.FenParser.parseUciMove("e1e8", 1),
-            com.example.paochess.data.FenParser.parseUciMove("g8f8", 2),
-            com.example.paochess.data.FenParser.parseUciMove("e8f8", 3)
-        ),
-        "Push the Rook to the back rank."
-    )
 )
 
 @Composable
