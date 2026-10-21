@@ -240,7 +240,7 @@ val PUZZLES = listOf(
         ),
         listOf(MoveStep("If White slides the Rook to a8, the Knight covers the escape. This is Anastasia's Mate.", Square(6, 7), Square(0, 7))),
         "Slide the Rook along the back rank."
-    )
+    ),
     // 13. The Pin
     Puzzle(
         "The Pin",
