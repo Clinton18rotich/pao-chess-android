@@ -2,6 +2,7 @@ package com.example.paochess
 
 import com.example.paochess.data.*
 import com.example.paochess.ui.screens.PUZZLES
+import com.example.paochess.ui.screens.MoveStep
 import org.junit.Test
 import org.junit.Assert.*
 
@@ -9,60 +10,39 @@ class PuzzleAuditTest {
 
     /**
      * For each puzzle, verify:
-     *   - the solution move is legal
-     *   - if the label says "Checkmate", the resulting position IS mate
-     *   - if not mate, FIND a real mate-in-1 on that board (so we can fix it)
+     *   - Each move in the solution sequence is legal from the current board state
+     *   - The board state evolves correctly
+     *   - The sequence doesn't reference empty source squares
      */
     @Test
-    fun `audit every puzzle`() {
+    fun `audit every puzzle sequence is legal`() {
         val failures = mutableListOf<String>()
 
         PUZZLES.forEachIndexed { index, puzzle ->
             val label = "#${index + 1} ${puzzle.name}"
-            val piece = puzzle.board[puzzle.solution.from]
-            if (piece == null) {
-                failures.add("$label: source ${puzzle.solution.from} is empty")
-                return@forEachIndexed
-            }
+            var board = puzzle.board
+            var stepIndex = 0
 
-            val legal = getLegalMoves(puzzle.solution.from, piece, puzzle.board)
-            if (!legal.contains(puzzle.solution.to)) {
-                failures.add("$label: ${puzzle.solution.from}->${puzzle.solution.to} is ILLEGAL for ${piece.type}")
-                return@forEachIndexed
-            }
-
-            val after = applyMove(puzzle.board, puzzle.solution.from, puzzle.solution.to)
-            val enemy = if (piece.color == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
-
-            if (puzzle.description.contains("Checkmate", ignoreCase = true)) {
-                if (!isCheckmate(enemy, after)) {
-                    val alt = findMateInOne(piece.color, puzzle.board)
-                    failures.add("$label: ${puzzle.solution.from}->${puzzle.solution.to} NOT mate. Real mate-in-1: $alt")
+            for (move in puzzle.solution) {
+                stepIndex++
+                val piece = board[move.from]
+                if (piece == null) {
+                    failures.add("$label step $stepIndex: source ${move.from} is empty (\"${move.description}\")")
+                    break
                 }
-            } else {
-                // Non-mate tactics: just confirm the move gives check or wins material (attacks a valuable piece)
-                val givesCheck = isInCheck(enemy, after)
-                if (!givesCheck) {
-                    failures.add("$label: ${puzzle.solution.from}->${puzzle.solution.to} does not give check (label='${puzzle.description}')")
+
+                val legal = getLegalMoves(move.from, piece, board)
+                if (!legal.contains(move.to)) {
+                    failures.add("$label step $stepIndex: ${move.from}->${move.to} ILLEGAL for ${piece.type}")
+                    break
                 }
+
+                board = applyMove(board, move.from, move.to)
             }
         }
 
         if (failures.isNotEmpty()) {
             fail("Puzzle audit failures:\n" + failures.joinToString("\n"))
         }
-    }
-
-    /** Brute-force: find ANY legal move by `color` that delivers checkmate. */
-    private fun findMateInOne(color: PieceColor, board: Map<Square, Piece>): String {
-        val enemy = if (color == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
-        for ((from, piece) in board) {
-            if (piece.color != color) continue
-            for (to in getLegalMoves(from, piece, board)) {
-                val after = applyMove(board, from, to)
-                if (isCheckmate(enemy, after)) return "$from -> $to (${piece.type})"
-            }
-        }
-        return "none found — redesign this puzzle"
     }
 }

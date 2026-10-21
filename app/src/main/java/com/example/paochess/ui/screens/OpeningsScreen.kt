@@ -76,6 +76,16 @@ fun OpeningsScreen() {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.US
+                // Try to find a female voice
+                val voices = tts?.voices
+                val femaleVoice = voices?.firstOrNull { it.name.contains("female", ignoreCase = true) || it.name.contains("samantha", ignoreCase = true) || it.name.contains("zira", ignoreCase = true) }
+                if (femaleVoice != null) {
+                    tts?.voice = femaleVoice
+                }
+                // Higher pitch for a soft, encouraging tone
+                tts?.setPitch(1.15f)
+                tts?.setSpeechRate(0.95f)
+                
                 tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) { isTtsSpeaking = true }
                     override fun onDone(utteranceId: String?) { isTtsSpeaking = false }
