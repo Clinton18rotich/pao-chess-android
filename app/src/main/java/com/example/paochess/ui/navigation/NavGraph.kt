@@ -25,6 +25,7 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Play : Screen("play", "Practice", Icons.Filled.PlayArrow)
     object Puzzles : Screen("puzzles", "Puzzles", Icons.Filled.Extension)
     object Notation : Screen("notation", "Notation", Icons.Filled.List)
+    object Games : Screen("games", "Games", Icons.Filled.PlayArrow)
 }
 
 @Composable
@@ -62,6 +63,7 @@ fun ChessNavGraph() {
             composable(Screen.Play.route) { PracticeScreen() }
             composable(Screen.Puzzles.route) { PuzzlesScreen() }
             composable(Screen.Notation.route) { NotationScreen() }
+            composable(Screen.Games.route) { GameViewerScreen() }
         }
     }
 }
