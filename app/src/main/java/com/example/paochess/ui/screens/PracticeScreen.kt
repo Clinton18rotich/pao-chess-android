@@ -26,12 +26,6 @@ fun PracticeScreen() {
     var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
     var currentPraise by remember { mutableStateOf("") }
 
-    // Helper to enforce consistent voice pitch/rate every time
-    fun speak(text: String) {
-        tts?.setPitch(1.15f)
-        tts?.setSpeechRate(0.95f)
-        tts?.speak(text)
-    }
     
     val encouragingPhrases = listOf(
         "Excellent! That's exactly it.",
@@ -62,6 +56,13 @@ fun PracticeScreen() {
                 isTtsReady = true
             }
         }
+    }
+
+    // Helper to enforce consistent voice pitch/rate every time
+    fun speak(text: String) {
+        tts?.setPitch(1.15f)
+        tts?.setSpeechRate(0.95f)
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     fun resetPuzzle() {
