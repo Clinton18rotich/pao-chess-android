@@ -26,6 +26,13 @@ fun PracticeScreen() {
     var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
     var currentPraise by remember { mutableStateOf("") }
 
+    // Helper to enforce consistent voice pitch/rate every time
+    fun speak(text: String) {
+        tts?.setPitch(1.15f)
+        tts?.setSpeechRate(0.95f)
+        tts?.speak(text)
+    }
+    
     val encouragingPhrases = listOf(
         "Excellent! That's exactly it.",
         "Beautifully spotted. Keep going.",
@@ -64,7 +71,7 @@ fun PracticeScreen() {
         legalMoves = emptyList()
         isSolved = false
         currentPraise = ""
-        if (isTtsReady) tts?.speak("Find the checkmate in one move.", TextToSpeech.QUEUE_FLUSH, null, null)
+        speak("Find the checkmate in one move.")
     }
 
     Column(
@@ -90,7 +97,10 @@ fun PracticeScreen() {
             ) { Text("AI") }
 
             Button(
-                onClick = { practiceMode = "FEN" },
+                onClick = { 
+                    practiceMode = "FEN"
+                    speak("Solve the FEN puzzle. Find the forced mate.")
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "FEN") Orange else DarkSurface, contentColor = if (practiceMode == "FEN") Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("FEN") }
@@ -119,6 +129,12 @@ fun PracticeScreen() {
         // --- FEN PRACTICE MODE UI ---
         if (practiceMode == "FEN") {
             var fenPuzzleIndex by remember { mutableStateOf(0) }
+            
+            // Speak intro when entering FEN mode
+            LaunchedEffect(Unit) {
+                kotlinx.coroutines.delay(500L)
+                speak("Solve the FEN puzzle. Find the forced mate.")
+            }
             var fenBoard by remember { mutableStateOf(FEN_PUZZLES[0].board) }
             var fenSelectedSquare by remember { mutableStateOf<Square?>(null) }
             var fenLegalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
@@ -167,7 +183,7 @@ fun PracticeScreen() {
                                                     
                                                     if (fenStep >= fenPuzzle.solution.size) {
                                                         fenSolved = true
-                                                        if (isTtsReady) tts?.speak(encouragingPhrases.random(), TextToSpeech.QUEUE_FLUSH, null, null)
+                                                        speak(encouragingPhrases.random())
                                                     } else {
                                                         // Auto-play Black's response
                                                         val nextMove = fenPuzzle.solution[fenStep]
@@ -175,12 +191,12 @@ fun PracticeScreen() {
                                                             fenBoard = applyMove(fenBoard, nextMove.from, nextMove.to)
                                                             fenStep++
                                                         }
-                                                        if (isTtsReady) tts?.speak(encouragingPhrases.random(), TextToSpeech.QUEUE_FLUSH, null, null)
+                                                        speak(encouragingPhrases.random())
                                                     }
                                                 } else {
                                                     fenSelectedSquare = null
                                                     fenLegalMoves = emptyList()
-                                                    if (isTtsReady) tts?.speak("Try again. Look for the forcing move.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    speak("Try again. Look for the forcing move.")
                                                 }
                                             } else if (piece != null && piece.color == PieceColor.WHITE) {
                                                 fenSelectedSquare = sq
@@ -283,14 +299,14 @@ fun PracticeScreen() {
                                                 val praise = encouragingPhrases.random()
                                                 currentPraise = praise
                                                 if (isTtsReady) {
-                                                    tts?.speak(praise, TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    speak(praise)
                                                 }
                                             } else {
                                                 // Wrong move
                                                 selectedSquare = null
                                                 legalMoves = emptyList()
                                                 if (isTtsReady) {
-                                                    tts?.speak("Try again. Look for a forcing checkmate.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    speak("Try again. Look for a forcing checkmate.")
                                                 }
                                             }
                                         } else if (piece != null && piece.color == PieceColor.WHITE) {
@@ -337,7 +353,7 @@ fun PracticeScreen() {
 
         if (!isSolved) {
             Button(
-                onClick = { if (isTtsReady) tts?.speak("Hint: ${currentPuzzle.hint}", TextToSpeech.QUEUE_FLUSH, null, null) },
+                onClick = { speak("Hint: ${currentPuzzle.hint}") },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
                 modifier = Modifier.fillMaxWidth()
             ) { Text("💡 Get a Hint") }

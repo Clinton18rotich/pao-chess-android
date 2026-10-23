@@ -412,14 +412,14 @@ fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?, isSpeaking: Boolean) {
         }
     }
 
-    Text(fenPuzzle.name, color = Orange, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    Text("${fenPuzzle.name} (${fenPuzzleIndex + 1} / ${FEN_PUZZLES.size})", color = Orange, fontSize = 20.sp, fontWeight = FontWeight.Bold)
     Text(fenPuzzle.description, color = LightGrey, fontSize = 14.sp)
     Spacer(Modifier.height(16.dp))
 
     if (fenSolved) {
         Text("✅ Puzzle Solved!", color = Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
     } else {
-        Text("Move ${fenStep + 1} of ${fenPuzzle.solution.size}", color = White, fontSize = 16.sp)
+        Text("Move ${fenStep + 1} of ${fenPuzzle.solution.size} (this puzzle)", color = White, fontSize = 14.sp)
     }
 
     Spacer(Modifier.height(16.dp))
