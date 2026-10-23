@@ -31,18 +31,18 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
 @Composable
 fun ChessNavGraph() {
     val navController = rememberNavController()
-    val items = listOf(Screen.Learn, Screen.Openings, Screen.Play, Screen.Puzzles, Screen.Notation)
+    val items = listOf(Screen.Learn, Screen.Openings, Screen.Puzzles, Screen.Practice, Screen.Games, Screen.Notation)
 
     Scaffold(
         containerColor = DarkBg,
         bottomBar = {
-            NavigationBar(containerColor = DarkSurface) {
+            NavigationBar(containerColor = DarkSurface, modifier = Modifier.height(56.dp)) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 items.forEach { screen ->
                     NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.label, tint = if (currentRoute == screen.route) Orange else LightGrey) },
-                        label = { Text(screen.label, fontSize = 10.sp, color = if (currentRoute == screen.route) Orange else LightGrey) },
+                        icon = { Icon(screen.icon, contentDescription = screen.label, tint = if (currentRoute == screen.route) Orange else LightGrey, modifier = Modifier.size(20.dp)) },
+                        label = { Text(screen.label, fontSize = 8.sp, color = if (currentRoute == screen.route) Orange else LightGrey, maxLines = 1) },
                         selected = currentRoute == screen.route,
                         onClick = {
                             navController.navigate(screen.route) {

@@ -369,7 +369,7 @@ fun PuzzlesScreen() {
 }
 
 @Composable
-fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?) {
+fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?, isSpeaking: Boolean) {
     var fenPuzzleIndex by remember { mutableStateOf(0) }
     var fenBoard by remember { mutableStateOf(FEN_PUZZLES[0].board) }
     var fenStep by remember { mutableStateOf(0) }
@@ -388,14 +388,21 @@ fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?) {
                     tts?.speak(moveToPlay.description, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
                 
-                // 2. Wait for voice (approx 3 seconds)
-                kotlinx.coroutines.delay(3000L) 
+                // 2. Wait for the voice to ACTUALLY finish (poll every 200ms)
+                // We wait a tiny bit for TTS to start, then wait while it's speaking
+                kotlinx.coroutines.delay(500L) 
+                while (isSpeaking) {
+                    kotlinx.coroutines.delay(200L)
+                }
                 
-                // 3. Move the piece
+                // 3. Add a small pause after speaking so you can look at the board
+                kotlinx.coroutines.delay(800L)
+                
+                // 4. Move the piece
                 fenBoard = applyMove(fenBoard, moveToPlay.from, moveToPlay.to)
                 fenStep++
                 
-                kotlinx.coroutines.delay(1000L)
+                kotlinx.coroutines.delay(500L)
 
                 if (fenStep >= fenPuzzle.solution.size) {
                     fenSolved = true
