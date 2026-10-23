@@ -295,7 +295,8 @@ fun PuzzlesScreen() {
         if (puzzleMode == "FEN") {
             FenTeacher(
                 isTtsReady = isTtsReady,
-                tts = tts
+                tts = tts,
+                isSpeaking = isTtsSpeaking
             )
             return@Column
         }

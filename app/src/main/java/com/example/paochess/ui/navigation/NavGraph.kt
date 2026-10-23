@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -31,7 +32,7 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
 @Composable
 fun ChessNavGraph() {
     val navController = rememberNavController()
-    val items = listOf(Screen.Learn, Screen.Openings, Screen.Puzzles, Screen.Practice, Screen.Games, Screen.Notation)
+    val items = listOf(Screen.Learn, Screen.Openings, Screen.Puzzles, Screen.Play, Screen.Games, Screen.Notation)
 
     Scaffold(
         containerColor = DarkBg,
