@@ -71,17 +71,58 @@ fun GameViewerScreen() {
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
+    var speechDoneSignal by remember { mutableStateOf<kotlinx.coroutines.CompletableDeferred<Unit>?>(null) }
 
     LaunchedEffect(Unit) {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.US
-                tts?.setPitch(0.85f) // Calm male narrator
-                tts?.setSpeechRate(0.9f)
+                
+                // Enumerate all English voices
+                try {
+                    val voices = tts?.voices
+                    if (voices != null) {
+                        val englishVoices = voices.filter { it.locale.language == "en" }
+                        android.util.Log.d("TTS_VOICES", "Total: ${voices.size}, English: ${englishVoices.size}")
+                        for (v in englishVoices) {
+                            android.util.Log.d("TTS_VOICES", "name=${v.name}, locale=${v.locale}, quality=${v.quality}")
+                        }
+                        
+                        // Try to find a male voice using multiple patterns
+                        val maleCandidates = englishVoices.filter { v ->
+                            val n = v.name.lowercase()
+                            (n.contains("male") && !n.contains("female")) ||
+                            n.contains("#male") ||
+                            n.contains("_male") ||
+                            n.contains("iom") ||
+                            n.contains("iob") ||
+                            n.contains("gb-male") ||
+                            n.contains("-m-")
+                        }
+                        
+                        android.util.Log.d("TTS_VOICES", "Male candidates: ${maleCandidates.size}")
+                        
+                        if (maleCandidates.isNotEmpty()) {
+                            tts?.voice = maleCandidates.first()
+                            android.util.Log.d("TTS_VOICES", "Selected: ${maleCandidates.first().name}")
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("TTS_VOICES", "Voice selection failed: ${e.message}")
+                }
+                
+                tts?.setPitch(0.55f) // Deeper male narrator
+                tts?.setSpeechRate(0.85f) // Slower for calm delivery
                 tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) { isSpeaking = true }
-                    override fun onDone(utteranceId: String?) { isSpeaking = false }
-                    override fun onError(utteranceId: String?) { isSpeaking = false }
+                    override fun onDone(utteranceId: String?) { 
+                        isSpeaking = false
+                        speechDoneSignal?.complete(Unit)
+                    }
+                    override fun onError(utteranceId: String?) { 
+                        isSpeaking = false
+                        speechDoneSignal?.complete(Unit)
+                    }
                 })
                 isTtsReady = true
             }
@@ -95,8 +136,13 @@ fun GameViewerScreen() {
         if (isPlaying) {
             while (currentStep < game.moves.size) {
                 val moveToPlay = game.moves[currentStep]
+                val moveStartTime = System.currentTimeMillis()
                 
-                // 1. Speak the move description
+                // 1. Create completion signal BEFORE speaking
+                val completionSignal = kotlinx.coroutines.CompletableDeferred<Unit>()
+                speechDoneSignal = completionSignal
+                
+                // 2. Speak
                 if (isTtsReady) {
                     val textToSpeak = if (currentStep == 0) {
                         "This is one of the most famous games in chess history. ${game.description} ${moveToPlay.description}"
@@ -106,31 +152,30 @@ fun GameViewerScreen() {
                     tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
                 
-                // 2. Wait for voice to START (max 2s safety)
+                // 3. Wait for voice to finish (60s safety timeout)
                 try {
-                    kotlinx.coroutines.withTimeout(2000L) {
-                        snapshotFlow { isSpeaking }.first { it }
+                    kotlinx.coroutines.withTimeout(60000L) {
+                        completionSignal.await()
                     }
                 } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-                    // Voice never started — continue
+                    // Voice took too long or failed — fall through to floor
                 }
                 
-                // 3. Wait for voice to FINISH (voice controls pacing)
-                try {
-                    snapshotFlow { isSpeaking }.first { !it }
-                } catch (e: Exception) { }
+                // 4. MINIMUM 4 SECOND FLOOR (safety net if voice finished fast or failed)
+                val elapsed = System.currentTimeMillis() - moveStartTime
+                if (elapsed < 4000L) {
+                    delay(4000L - elapsed)
+                }
                 
-                // 4. Small pause, then move the piece
+                // 5. Move the piece
                 delay(500L)
                 currentStep++
                 
-                // If we've reached the end, stop
                 if (currentStep >= game.moves.size) {
                     isPlaying = false
                     break
                 }
                 
-                // Small pause before next move's voice
                 delay(500L)
             }
             isPlaying = false
