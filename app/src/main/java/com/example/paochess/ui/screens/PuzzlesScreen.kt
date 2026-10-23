@@ -384,25 +384,22 @@ fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?, isSpeaking: Boolean) {
             if (fenStep < fenPuzzle.solution.size) {
                 val moveToPlay = fenPuzzle.solution[fenStep]
                 
-                // 1. Speak first
                 if (isTtsReady) {
                     tts?.speak(moveToPlay.description, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
                 
-                // 2. Wait for the voice to ACTUALLY finish (poll every 200ms)
-                // We wait a tiny bit for TTS to start, then wait while it's speaking
-                kotlinx.coroutines.delay(500L) 
+                val startTime = System.currentTimeMillis()
+                kotlinx.coroutines.delay(500L)
                 while (isSpeaking) {
                     kotlinx.coroutines.delay(200L)
                 }
+                val elapsed = System.currentTimeMillis() - startTime
+                if (elapsed < 4000L) {
+                    kotlinx.coroutines.delay(4000L - elapsed)
+                }
                 
-                // 3. Add a small pause after speaking so you can look at the board
-                kotlinx.coroutines.delay(800L)
-                
-                // 4. Move the piece
                 fenBoard = applyMove(fenBoard, moveToPlay.from, moveToPlay.to)
                 fenStep++
-                
                 kotlinx.coroutines.delay(500L)
 
                 if (fenStep >= fenPuzzle.solution.size) {

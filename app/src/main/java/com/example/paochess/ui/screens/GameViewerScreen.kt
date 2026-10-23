@@ -94,23 +94,29 @@ fun GameViewerScreen() {
             if (currentStep < game.moves.size) {
                 val moveToPlay = game.moves[currentStep]
                 
-                // 1. Speak first
+                // 1. Speak the move description (with game intro on first move)
                 if (isTtsReady) {
-                    tts?.speak(moveToPlay.description, TextToSpeech.QUEUE_FLUSH, null, null)
+                    val textToSpeak = if (currentStep == 0) {
+                        "This is one of the most famous games in chess history. ${game.description} ${moveToPlay.description}"
+                    } else {
+                        moveToPlay.description
+                    }
+                    tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
                 
-                // 2. Wait for voice to finish
-                delay(500L) // tiny start delay
+                // 2. Wait for voice to finish + minimum 4 second floor
+                val startTime = System.currentTimeMillis()
+                delay(500L)
                 while (isSpeaking) {
                     delay(200L)
                 }
+                val elapsed = System.currentTimeMillis() - startTime
+                if (elapsed < 4000L) {
+                    delay(4000L - elapsed)
+                }
                 
-                // 3. Pause briefly so the user can see the piece move
-                delay(800L)
-                
-                // 4. Move the piece
+                // 3. Move the piece
                 currentStep++
-                
                 delay(500L)
 
                 if (currentStep >= game.moves.size) {
