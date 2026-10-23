@@ -218,6 +218,7 @@ val PUZZLES = listOf(
 
 @Composable
 fun PuzzlesScreen() {
+    var puzzleMode by remember { mutableStateOf("CLASSIC") } // CLASSIC or FEN
     var currentPuzzleIndex by remember { mutableStateOf(0) }
     var currentStep by remember { mutableStateOf(0) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -273,6 +274,33 @@ fun PuzzlesScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("🧩 Puzzles Coach", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+        
+        // Toggle Buttons
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = { puzzleMode = "CLASSIC" },
+                colors = ButtonDefaults.buttonColors(containerColor = if (puzzleMode == "CLASSIC") Orange else DarkSurface, contentColor = if (puzzleMode == "CLASSIC") Color.Black else White),
+                modifier = Modifier.weight(1f)
+            ) { Text("Classic 18") }
+            
+            Button(
+                onClick = { puzzleMode = "FEN" },
+                colors = ButtonDefaults.buttonColors(containerColor = if (puzzleMode == "FEN") Orange else DarkSurface, contentColor = if (puzzleMode == "FEN") Color.Black else White),
+                modifier = Modifier.weight(1f)
+            ) { Text("FEN Puzzles") }
+        }
+        Spacer(Modifier.height(16.dp))
+
+        if (puzzleMode == "FEN") {
+            FenTeacher(
+                isTtsReady = isTtsReady,
+                tts = tts
+            )
+            return@Column
+        }
+        
+        // --- CLASSIC PUZZLES UI CONTINUES BELOW ---
         Spacer(Modifier.height(8.dp))
         Text("${currentPuzzleIndex + 1} / ${PUZZLES.size} · ${currentPuzzle.name}",
             color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -337,5 +365,119 @@ fun PuzzlesScreen() {
         Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E2A1E)), shape = RoundedCornerShape(10.dp)) {
             Text("💡 Hint: ${currentPuzzle.hint}", color = Green, fontSize = 14.sp, modifier = Modifier.padding(12.dp))
         }
+    }
+}
+
+@Composable
+fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?) {
+    var fenPuzzleIndex by remember { mutableStateOf(0) }
+    var fenBoard by remember { mutableStateOf(FEN_PUZZLES[0].board) }
+    var fenStep by remember { mutableStateOf(0) }
+    var fenSolved by remember { mutableStateOf(false) }
+    var fenIsPlaying by remember { mutableStateOf(false) }
+
+    val fenPuzzle = FEN_PUZZLES[fenPuzzleIndex]
+
+    LaunchedEffect(fenIsPlaying, fenStep) {
+        if (fenIsPlaying) {
+            if (fenStep < fenPuzzle.solution.size) {
+                val moveToPlay = fenPuzzle.solution[fenStep]
+                
+                // 1. Speak first
+                if (isTtsReady) {
+                    tts?.speak(moveToPlay.description, TextToSpeech.QUEUE_FLUSH, null, null)
+                }
+                
+                // 2. Wait for voice (approx 3 seconds)
+                kotlinx.coroutines.delay(3000L) 
+                
+                // 3. Move the piece
+                fenBoard = applyMove(fenBoard, moveToPlay.from, moveToPlay.to)
+                fenStep++
+                
+                kotlinx.coroutines.delay(1000L)
+
+                if (fenStep >= fenPuzzle.solution.size) {
+                    fenSolved = true
+                    fenIsPlaying = false
+                }
+            } else {
+                fenIsPlaying = false
+            }
+        }
+    }
+
+    Text(fenPuzzle.name, color = Orange, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    Text(fenPuzzle.description, color = LightGrey, fontSize = 14.sp)
+    Spacer(Modifier.height(16.dp))
+
+    if (fenSolved) {
+        Text("✅ Puzzle Solved!", color = Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+    } else {
+        Text("Move ${fenStep + 1} of ${fenPuzzle.solution.size}", color = White, fontSize = 16.sp)
+    }
+
+    Spacer(Modifier.height(16.dp))
+
+    Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            for (rank in 7 downTo 0) {
+                Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                    for (file in 0..7) {
+                        val sq = Square(file, rank)
+                        val piece = fenBoard[sq]
+                        val isDark = (file + rank) % 2 == 1
+                        val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                        
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .background(squareColor),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (piece != null) {
+                                val symbol = when (piece.type) {
+                                    PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
+                                    PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
+                                }
+                                val text = if (piece.color == PieceColor.WHITE) {
+                                    symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
+                                          .replace("♜","♖").replace("♛","♕").replace("♚","♔")
+                                } else symbol
+                                Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Spacer(Modifier.height(16.dp))
+
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Button(
+            onClick = {
+                fenBoard = fenPuzzle.board
+                fenStep = 0
+                fenSolved = false
+                fenIsPlaying = true
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black),
+            modifier = Modifier.weight(1f)
+        ) { Text("▶ Play") }
+
+        Button(
+            onClick = {
+                fenPuzzleIndex = (fenPuzzleIndex + 1) % FEN_PUZZLES.size
+                fenBoard = FEN_PUZZLES[fenPuzzleIndex].board
+                fenStep = 0
+                fenSolved = false
+                fenIsPlaying = false
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
+            modifier = Modifier.weight(1f)
+        ) { Text("Next Puzzle") }
     }
 }
