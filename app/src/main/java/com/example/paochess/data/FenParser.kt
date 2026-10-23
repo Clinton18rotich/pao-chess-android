@@ -1,28 +1,23 @@
 package com.example.paochess.data
 
-import com.example.paochess.ui.screens.MoveStep
-
 object FenParser {
 
     /**
-     * Converts a FEN string into your app's Map<Square, Piece> format.
-     * FEN ranks go from 8 down to 1, while your board uses rank 7 down to 0.
+     * Parses a FEN string into the app's Map<Square, Piece>.
+     * FEN rank order is 8..1, but our board uses rank 7..0.
      */
     fun parseFen(fen: String): Map<Square, Piece> {
         val board = mutableMapOf<Square, Piece>()
         val ranks = fen.split(" ")[0].split("/")
-        
-        // FEN starts at rank 8 (index 0 in the array, but rank 7 in our system)
-        for (rankIndex in 0..7) {
-            var fileIndex = 0
-            val rankString = ranks[rankIndex]
-            val actualRank = 7 - rankIndex // Convert FEN rank (8..1) to board rank (7..0)
 
-            for (char in rankString) {
+        for (rankIndex in 0..7) {
+            val actualRank = 7 - rankIndex
+            var fileIndex = 0
+            for (char in ranks[rankIndex]) {
                 if (char.isDigit()) {
-                    fileIndex += char.digitToInt() // Skip empty squares
+                    fileIndex += char.digitToInt()
                 } else {
-                    val pieceType = when (char.lowercaseChar()) {
+                    val type = when (char.lowercaseChar()) {
                         'p' -> PieceType.PAWN
                         'n' -> PieceType.KNIGHT
                         'b' -> PieceType.BISHOP
@@ -32,8 +27,7 @@ object FenParser {
                         else -> continue
                     }
                     val color = if (char.isUpperCase()) PieceColor.WHITE else PieceColor.BLACK
-                    
-                    board[Square(fileIndex, actualRank)] = Piece(pieceType, color)
+                    board[Square(fileIndex, actualRank)] = Piece(type, color)
                     fileIndex++
                 }
             }
@@ -42,43 +36,13 @@ object FenParser {
     }
 
     /**
-     * Converts a UCI move string (e.g., "e2e4") into a MoveStep.
-     * We use a generic description since the database doesn't provide text.
+     * Converts a UCI move (e.g. "e2e4") into from/to Squares.
+     * Returns null if the UCI string is malformed.
      */
-    fun parseUciMove(uci: String, moveNumber: Int): MoveStep {
-        val fromFile = uci[0] - 'a'
-        val fromRank = uci[1] - '1'
-        val toFile = uci[2] - 'a'
-        val toRank = uci[3] - '1'
-        
-        return MoveStep(
-            description = "Move $moveNumber: Play the best move.",
-            from = Square(fromFile, fromRank),
-            to = Square(toFile, toRank)
-        )
-    }
-
-    /**
-     * Parses the full Lichess puzzle format (FEN + UCI moves).
-     * Note: In Lichess, the first move is the opponent's blunder.
-     * The actual solution starts from the *second* move.
-     */
-    fun parseLichessPuzzle(fen: String, uciMoves: String): Pair<Map<Square, Piece>, List<MoveStep>> {
-        val board = parseFen(fen)
-        val allMoves = uciMoves.split(" ")
-        
-        // Apply the opponent's blunder first (the first move in the list)
-        val opponentMove = allMoves[0]
-        val updatedBoard = applyMove(board, 
-            Square(opponentMove[0] - 'a', opponentMove[1] - '1'),
-            Square(opponentMove[2] - 'a', opponentMove[3] - '1')
-        )
-        
-        // The solution is the remaining moves
-        val solutionMoves = allMoves.drop(1).mapIndexed { index, uci ->
-            parseUciMove(uci, index + 1)
-        }
-        
-        return Pair(updatedBoard, solutionMoves)
+    fun parseUciMove(uci: String): Pair<Square, Square>? {
+        if (uci.length < 4) return null
+        val from = Square(uci[0] - 'a', uci[1] - '1')
+        val to = Square(uci[2] - 'a', uci[3] - '1')
+        return Pair(from, to)
     }
 }
