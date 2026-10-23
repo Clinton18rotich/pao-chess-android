@@ -26,7 +26,7 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Play : Screen("play", "Practice", Icons.Filled.PlayArrow)
     object Puzzles : Screen("puzzles", "Puzzles", Icons.Filled.Extension)
     object Notation : Screen("notation", "Notation", Icons.Filled.List)
-    object Games : Screen("games", "Games", Icons.Filled.PlayArrow)
+    object Games : Screen("games", "Games", Icons.Filled.Movie)
 }
 
 @Composable

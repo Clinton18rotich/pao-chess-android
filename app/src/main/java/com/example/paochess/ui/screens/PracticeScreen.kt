@@ -89,6 +89,11 @@ fun PracticeScreen() {
                 modifier = Modifier.weight(1f)
             ) { Text("AI") }
 
+            Button(
+                onClick = { practiceMode = "FEN" },
+                colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "FEN") Orange else DarkSurface, contentColor = if (practiceMode == "FEN") Color.Black else White),
+                modifier = Modifier.weight(1f)
+            ) { Text("FEN") }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -110,6 +115,131 @@ fun PracticeScreen() {
         }
 
 
+
+        // --- FEN PRACTICE MODE UI ---
+        if (practiceMode == "FEN") {
+            var fenPuzzleIndex by remember { mutableStateOf(0) }
+            var fenBoard by remember { mutableStateOf(FEN_PUZZLES[0].board) }
+            var fenSelectedSquare by remember { mutableStateOf<Square?>(null) }
+            var fenLegalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
+            var fenStep by remember { mutableStateOf(0) }
+            var fenSolved by remember { mutableStateOf(false) }
+
+            val fenPuzzle = FEN_PUZZLES[fenPuzzleIndex]
+
+            Text("Practice FEN: ${fenPuzzle.name}", color = Orange, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            
+            if (fenSolved) {
+                Text("✅ Puzzle solved! Great job.", color = Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            } else {
+                Text("Move ${fenStep + 1} of ${fenPuzzle.solution.size}. Tap a White piece.", color = White, fontSize = 14.sp)
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    for (rank in 7 downTo 0) {
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            for (file in 0..7) {
+                                val sq = Square(file, rank)
+                                val piece = fenBoard[sq]
+                                val isDark = (file + rank) % 2 == 1
+                                val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                val isSelected = fenSelectedSquare == sq
+                                val isLegal = fenLegalMoves.contains(sq)
+
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .background(squareColor)
+                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
+                                        .clickable {
+                                            if (fenSolved) return@clickable
+
+                                            if (isLegal) {
+                                                val expected = fenPuzzle.solution[fenStep]
+                                                if (fenSelectedSquare == expected.from && sq == expected.to) {
+                                                    fenBoard = applyMove(fenBoard, fenSelectedSquare!!, sq)
+                                                    fenStep++
+                                                    
+                                                    if (fenStep >= fenPuzzle.solution.size) {
+                                                        fenSolved = true
+                                                        if (isTtsReady) tts?.speak(encouragingPhrases.random(), TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    } else {
+                                                        // Auto-play Black's response
+                                                        val nextMove = fenPuzzle.solution[fenStep]
+                                                        if (nextMove.description.contains("Black", ignoreCase = true)) {
+                                                            fenBoard = applyMove(fenBoard, nextMove.from, nextMove.to)
+                                                            fenStep++
+                                                        }
+                                                        if (isTtsReady) tts?.speak(encouragingPhrases.random(), TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    }
+                                                } else {
+                                                    fenSelectedSquare = null
+                                                    fenLegalMoves = emptyList()
+                                                    if (isTtsReady) tts?.speak("Try again. Look for the forcing move.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                }
+                                            } else if (piece != null && piece.color == PieceColor.WHITE) {
+                                                fenSelectedSquare = sq
+                                                fenLegalMoves = getLegalMoves(sq, piece, fenBoard)
+                                            } else {
+                                                fenSelectedSquare = null
+                                                fenLegalMoves = emptyList()
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
+                                    if (piece != null) {
+                                        val symbol = when (piece.type) {
+                                            PieceType.PAWN -> "♟"; PieceType.KNIGHT -> "♞"; PieceType.BISHOP -> "♝"
+                                            PieceType.ROOK -> "♜"; PieceType.QUEEN -> "♛"; PieceType.KING -> "♚"
+                                        }
+                                        val text = if (piece.color == PieceColor.WHITE) {
+                                            symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
+                                                  .replace("♜","♖").replace("♛","♕").replace("♚","♔")
+                                        } else symbol
+                                        Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        fenBoard = fenPuzzle.board
+                        fenStep = 0
+                        fenSolved = false
+                        fenSelectedSquare = null
+                        fenLegalMoves = emptyList()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Reset") }
+                
+                Button(
+                    onClick = {
+                        fenPuzzleIndex = (fenPuzzleIndex + 1) % FEN_PUZZLES.size
+                        fenBoard = FEN_PUZZLES[fenPuzzleIndex].board
+                        fenStep = 0
+                        fenSolved = false
+                        fenSelectedSquare = null
+                        fenLegalMoves = emptyList()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Next Puzzle") }
+            }
+            return@Column
+        }
 
         // --- TACTICS MODE UI ---
         Text("Find the checkmate in 1! (${PUZZLES.size} puzzles loaded)", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
