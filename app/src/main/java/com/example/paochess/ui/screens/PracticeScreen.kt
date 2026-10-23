@@ -122,8 +122,40 @@ fun PracticeScreen() {
             var fenLegalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
             var fenStep by remember { mutableStateOf(0) }
             var fenSolved by remember { mutableStateOf(false) }
+            var fenIsPlaying by remember { mutableStateOf(false) }
 
             val fenPuzzle = FEN_PUZZLES[fenPuzzleIndex]
+
+            // Auto-play logic for the "Replay" button (Voice -> Move)
+            LaunchedEffect(fenIsPlaying, fenStep) {
+                if (fenIsPlaying) {
+                    if (fenStep < fenPuzzle.solution.size) {
+                        val moveToPlay = fenPuzzle.solution[fenStep]
+                        
+                        // 1. Speak first
+                        if (isTtsReady) {
+                            tts?.speak(moveToPlay.description, TextToSpeech.QUEUE_FLUSH, null, null)
+                        }
+                        
+                        // 2. Wait for voice (approximate based on text length, or just a fixed 3s wait)
+                        kotlinx.coroutines.delay(3000L) 
+                        
+                        // 3. Move the piece
+                        fenBoard = applyMove(fenBoard, moveToPlay.from, moveToPlay.to)
+                        fenStep++
+                        
+                        // 4. Small pause before next move
+                        kotlinx.coroutines.delay(1000L)
+
+                        if (fenStep >= fenPuzzle.solution.size) {
+                            fenSolved = true
+                            fenIsPlaying = false
+                        }
+                    } else {
+                        fenIsPlaying = false
+                    }
+                }
+            }
 
             Text(fenPuzzle.name, color = Orange, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Text(fenPuzzle.description, color = LightGrey, fontSize = 14.sp)
@@ -213,18 +245,33 @@ fun PracticeScreen() {
 
             Spacer(Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    fenPuzzleIndex = (fenPuzzleIndex + 1) % FEN_PUZZLES.size
-                    fenBoard = FEN_PUZZLES[fenPuzzleIndex].board
-                    fenSelectedSquare = null
-                    fenLegalMoves = emptyList()
-                    fenStep = 0
-                    fenSolved = false
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Next Puzzle") }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        // Reset and start playing
+                        fenBoard = fenPuzzle.board
+                        fenStep = 0
+                        fenSolved = false
+                        fenIsPlaying = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black),
+                    modifier = Modifier.weight(1f)
+                ) { Text("▶ Play", fontSize = 14.sp) }
+
+                Button(
+                    onClick = {
+                        fenPuzzleIndex = (fenPuzzleIndex + 1) % FEN_PUZZLES.size
+                        fenBoard = FEN_PUZZLES[fenPuzzleIndex].board
+                        fenSelectedSquare = null
+                        fenLegalMoves = emptyList()
+                        fenStep = 0
+                        fenSolved = false
+                        fenIsPlaying = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Next Puzzle", fontSize = 14.sp) }
+            }
 
             return@Column
         }
