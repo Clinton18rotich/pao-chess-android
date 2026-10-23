@@ -71,7 +71,7 @@ fun PracticeScreen() {
             ) { Text("Tactics") }
             
             Button(
-                onClick = { isTacticsMode = false },
+                onClick = { practiceMode = "AI"; resetAIGame() },
                 colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "AI") Orange else DarkSurface, contentColor = if (practiceMode == "AI") Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("Play vs AI") }
