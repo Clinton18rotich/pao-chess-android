@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -74,8 +75,8 @@ fun GameViewerScreen() {
         tts = TextToSpeech(context) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.US
-                tts?.setPitch(1.15f) // Soft female coach voice
-                tts?.setSpeechRate(0.95f)
+                tts?.setPitch(0.85f) // Calm male narrator
+                tts?.setSpeechRate(0.9f)
                 tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) { isSpeaking = true }
                     override fun onDone(utteranceId: String?) { isSpeaking = false }
@@ -89,12 +90,12 @@ fun GameViewerScreen() {
     val game = FAMOUS_GAMES[currentGameIndex]
 
     // Auto-play with proper voice sync
-    LaunchedEffect(isPlaying, currentStep) {
+    LaunchedEffect(isPlaying) {
         if (isPlaying) {
-            if (currentStep < game.moves.size) {
+            while (currentStep < game.moves.size) {
                 val moveToPlay = game.moves[currentStep]
                 
-                // 1. Speak the move description (with game intro on first move)
+                // 1. Speak the move description
                 if (isTtsReady) {
                     val textToSpeak = if (currentStep == 0) {
                         "This is one of the most famous games in chess history. ${game.description} ${moveToPlay.description}"
@@ -104,27 +105,34 @@ fun GameViewerScreen() {
                     tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
                 }
                 
-                // 2. Wait for voice to finish + minimum 4 second floor
-                val startTime = System.currentTimeMillis()
-                delay(500L)
-                while (isSpeaking) {
-                    delay(200L)
-                }
-                val elapsed = System.currentTimeMillis() - startTime
-                if (elapsed < 4000L) {
-                    delay(4000L - elapsed)
+                // 2. Wait for voice to START (max 2s safety)
+                try {
+                    kotlinx.coroutines.withTimeout(2000L) {
+                        snapshotFlow { isSpeaking }.first { it }
+                    }
+                } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+                    // Voice never started — continue
                 }
                 
-                // 3. Move the piece
-                currentStep++
+                // 3. Wait for voice to FINISH (voice controls pacing)
+                try {
+                    snapshotFlow { isSpeaking }.first { !it }
+                } catch (e: Exception) { }
+                
+                // 4. Small pause, then move the piece
                 delay(500L)
-
+                currentStep++
+                
+                // If we've reached the end, stop
                 if (currentStep >= game.moves.size) {
                     isPlaying = false
+                    break
                 }
-            } else {
-                isPlaying = false
+                
+                // Small pause before next move's voice
+                delay(500L)
             }
+            isPlaying = false
         }
     }
 
