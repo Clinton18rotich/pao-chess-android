@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import java.util.Locale
 
 data class FamousGame(
