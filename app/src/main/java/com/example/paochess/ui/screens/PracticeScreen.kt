@@ -24,6 +24,17 @@ import java.util.Locale
 @Composable
 fun PracticeScreen() {
     var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
+
+    val encouragingPhrases = listOf(
+        "Excellent! That's exactly it.",
+        "Beautifully spotted. Keep going.",
+        "You're starting to see the patterns. Nice work.",
+        "Exactly! The trap is set.",
+        "Brilliant. You're thinking like a grandmaster.",
+        "Perfect. That's the move.",
+        "Well done! You saw right through their defense.",
+        "Superb. Keep that up."
+    )
     
     // Pulls from the full PUZZLES list (now 18 items)
     var currentPuzzle by remember { mutableStateOf(PUZZLES.random()) }
@@ -135,7 +146,7 @@ fun PracticeScreen() {
                                                 board = applyMove(board, selectedSquare!!, square)
                                                 isSolved = true
                                                 if (isTtsReady) {
-                                                    tts?.speak("Correct! ${currentPuzzle.solution.description}", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    tts?.speak(encouragingPhrases.random(), TextToSpeech.QUEUE_FLUSH, null, null)
                                                 }
                                             } else {
                                                 // Wrong move
