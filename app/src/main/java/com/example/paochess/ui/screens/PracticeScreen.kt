@@ -23,7 +23,7 @@ import java.util.Locale
 
 @Composable
 fun PracticeScreen() {
-    var isTacticsMode by remember { mutableStateOf(true) }
+    var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
     
     // Pulls from the full PUZZLES list (now 18 items)
     var currentPuzzle by remember { mutableStateOf(PUZZLES.random()) }
@@ -65,21 +65,21 @@ fun PracticeScreen() {
         // Mode Toggle Buttons
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(
-                onClick = { isTacticsMode = true; resetPuzzle() },
-                colors = ButtonDefaults.buttonColors(containerColor = if (isTacticsMode) Orange else DarkSurface, contentColor = if (isTacticsMode) Color.Black else White),
+                onClick = { practiceMode = "TACTICS"; resetPuzzle() },
+                colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "TACTICS") Orange else DarkSurface, contentColor = if (practiceMode == "TACTICS") Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("Tactics") }
             
             Button(
                 onClick = { isTacticsMode = false },
-                colors = ButtonDefaults.buttonColors(containerColor = if (!isTacticsMode) Orange else DarkSurface, contentColor = if (!isTacticsMode) Color.Black else White),
+                colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "AI") Orange else DarkSurface, contentColor = if (practiceMode == "AI") Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("Play vs AI") }
         }
 
         Spacer(Modifier.height(24.dp))
 
-        if (!isTacticsMode) {
+        if (practiceMode == "AI") {
             // AI Placeholder
             Box(
                 modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(DarkSurface).border(2.dp, Orange),
