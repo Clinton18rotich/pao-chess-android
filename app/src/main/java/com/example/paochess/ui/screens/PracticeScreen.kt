@@ -24,6 +24,7 @@ import java.util.Locale
 @Composable
 fun PracticeScreen() {
     var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
+    var currentPraise by remember { mutableStateOf("") }
 
     val encouragingPhrases = listOf(
         "Excellent! That's exactly it.",
@@ -62,6 +63,7 @@ fun PracticeScreen() {
         selectedSquare = null
         legalMoves = emptyList()
         isSolved = false
+        currentPraise = ""
         if (isTtsReady) tts?.speak("Find the checkmate in one move.", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
@@ -85,7 +87,13 @@ fun PracticeScreen() {
                 onClick = { practiceMode = "AI" },
                 colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "AI") Orange else DarkSurface, contentColor = if (practiceMode == "AI") Color.Black else White),
                 modifier = Modifier.weight(1f)
-            ) { Text("Play vs AI") }
+            ) { Text("AI") }
+
+            Button(
+                onClick = { practiceMode = "FEN" },
+                colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "FEN") Orange else DarkSurface, contentColor = if (practiceMode == "FEN") Color.Black else White),
+                modifier = Modifier.weight(1f)
+            ) { Text("FEN") }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -226,7 +234,7 @@ fun PracticeScreen() {
         Spacer(Modifier.height(8.dp))
 
         if (isSolved) {
-            Text("✅ Correct! ${currentPuzzle.name}", color = Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("✅ ${if (currentPraise.isNotEmpty()) currentPraise else "Correct! ${currentPuzzle.name}"}", color = Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         } else {
             Text("Tap a White piece, then tap where it should move.", color = LightGrey, fontSize = 14.sp)
         }
@@ -260,8 +268,10 @@ fun PracticeScreen() {
                                                 // Correct!
                                                 board = applyMove(board, selectedSquare!!, square)
                                                 isSolved = true
+                                                val praise = encouragingPhrases.random()
+                                                currentPraise = praise
                                                 if (isTtsReady) {
-                                                    tts?.speak(encouragingPhrases.random(), TextToSpeech.QUEUE_FLUSH, null, null)
+                                                    tts?.speak(praise, TextToSpeech.QUEUE_FLUSH, null, null)
                                                 }
                                             } else {
                                                 // Wrong move
