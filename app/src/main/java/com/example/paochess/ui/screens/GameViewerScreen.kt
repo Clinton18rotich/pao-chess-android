@@ -71,7 +71,7 @@ fun GameViewerScreen() {
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
-    var speechDoneSignal by remember { mutableStateOf<kotlinx.coroutines.CompletableDeferred<Unit>?>(null) }
+    val speechSignalHolder = remember { SpeechSignalHolder() }
 
     LaunchedEffect(Unit) {
         tts = TextToSpeech(context) { status ->
@@ -111,17 +111,17 @@ fun GameViewerScreen() {
                     android.util.Log.e("TTS_VOICES", "Voice selection failed: ${e.message}")
                 }
                 
-                tts?.setPitch(0.55f) // Deeper male narrator
-                tts?.setSpeechRate(0.85f) // Slower for calm delivery
+                tts?.setPitch(1.15f) // Same as Puzzles coach
+                tts?.setSpeechRate(0.95f) // Same as Puzzles coach
                 tts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) { isSpeaking = true }
                     override fun onDone(utteranceId: String?) { 
                         isSpeaking = false
-                        speechDoneSignal?.complete(Unit)
+                        speechSignalHolder.complete()
                     }
                     override fun onError(utteranceId: String?) { 
                         isSpeaking = false
-                        speechDoneSignal?.complete(Unit)
+                        speechSignalHolder.complete()
                     }
                 })
                 isTtsReady = true
@@ -139,8 +139,7 @@ fun GameViewerScreen() {
                 val moveStartTime = System.currentTimeMillis()
                 
                 // 1. Create completion signal BEFORE speaking
-                val completionSignal = kotlinx.coroutines.CompletableDeferred<Unit>()
-                speechDoneSignal = completionSignal
+                val completionSignal = speechSignalHolder.newSignal()
                 
                 // 2. Speak
                 if (isTtsReady) {
@@ -154,17 +153,24 @@ fun GameViewerScreen() {
                 
                 // 3. Wait for voice to finish (60s safety timeout)
                 try {
-                    kotlinx.coroutines.withTimeout(60000L) {
+                    kotlinx.coroutines.withTimeout(15000L) {
                         completionSignal.await()
                     }
                 } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
                     // Voice took too long or failed — fall through to floor
                 }
                 
-                // 4. MINIMUM 4 SECOND FLOOR (safety net if voice finished fast or failed)
+                // 4. FLOOR: minimum wait based on text length (~15 chars/second, 3s-15s)
+                val textLen = if (isTtsReady) {
+                    if (currentStep == 0) 
+                        "This is one of the most famous games in chess history. ${game.description} ${moveToPlay.description}".length
+                    else moveToPlay.description.length
+                } else 0
+                val estimatedMs = (textLen / 15.0 * 1000).toLong().coerceIn(3000L, 15000L)
+                
                 val elapsed = System.currentTimeMillis() - moveStartTime
-                if (elapsed < 4000L) {
-                    delay(4000L - elapsed)
+                if (elapsed < estimatedMs) {
+                    delay(estimatedMs - elapsed)
                 }
                 
                 // 5. Move the piece
@@ -219,5 +225,27 @@ fun GameViewerScreen() {
                 Text("Next Move")
             }
         }
+    }
+}
+
+
+/**
+ * Thread-safe holder for a speech-completion signal.
+ * Uses @Volatile so the TTS thread sees new signals immediately
+ * (Compose mutableStateOf doesn't publish cross-thread reliably).
+ */
+class SpeechSignalHolder {
+    @Volatile
+    private var current: kotlinx.coroutines.CompletableDeferred<Unit>? = null
+    
+    fun newSignal(): kotlinx.coroutines.CompletableDeferred<Unit> {
+        val signal = kotlinx.coroutines.CompletableDeferred<Unit>()
+        current = signal
+        return signal
+    }
+    
+    fun complete() {
+        current?.complete(Unit)
+        current = null
     }
 }
