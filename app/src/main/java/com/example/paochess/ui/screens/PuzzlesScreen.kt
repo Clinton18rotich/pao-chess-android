@@ -378,6 +378,16 @@ fun FenTeacher(isTtsReady: Boolean, tts: TextToSpeech?, isSpeaking: Boolean) {
     var fenIsPlaying by remember { mutableStateOf(false) }
 
     val fenPuzzle = FEN_PUZZLES[fenPuzzleIndex]
+    
+    // Speak the puzzle heading when it loads or changes
+    LaunchedEffect(fenPuzzleIndex) {
+        kotlinx.coroutines.delay(300L)
+        if (isTtsReady) {
+            tts?.setPitch(1.15f)
+            tts?.setSpeechRate(0.95f)
+            tts?.speak("${fenPuzzle.name}. ${fenPuzzle.description}", TextToSpeech.QUEUE_FLUSH, null, null)
+        }
+    }
 
     LaunchedEffect(fenIsPlaying, fenStep) {
         if (fenIsPlaying) {
