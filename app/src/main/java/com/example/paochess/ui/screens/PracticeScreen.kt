@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
 import java.util.Locale
@@ -598,9 +599,8 @@ fun GameAnalysisDialog(
                 Text("━━━ Move List ━━━", color = Orange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 
-                val pairs = whiteMoves.zipWithIndex().map { (white, idx) ->
-                    val black = blackMoves.getOrNull(idx)
-                    Pair(white, black)
+                val pairs = whiteMoves.mapIndexed { idx, white ->
+                    Pair(white, blackMoves.getOrNull(idx))
                 }
                 
                 pairs.forEach { (white, black) ->
