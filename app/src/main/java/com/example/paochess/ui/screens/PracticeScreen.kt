@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.Divider
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,15 @@ import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
 import java.util.Locale
+
+data class RecordedMove(
+    val moveNumber: Int,
+    val color: PieceColor,
+    val from: Square,
+    val to: Square,
+    val piece: PieceType,
+    val capturedPiece: PieceType?
+)
 
 @Composable
 fun PracticeScreen() {
@@ -110,18 +121,193 @@ fun PracticeScreen() {
         Spacer(Modifier.height(24.dp))
 
         if (practiceMode == "AI") {
-            // AI Placeholder
-            Box(
-                modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(DarkSurface).border(2.dp, Orange),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("🤖", fontSize = 48.sp)
-                    Spacer(Modifier.height(16.dp))
-                    Text("Play vs AI", color = White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("Coming soon in a future update!", color = LightGrey, fontSize = 14.sp)
+            // AI Game State
+            var aiBoard by remember { mutableStateOf(getInitialBoard()) }
+            var aiSelectedSquare by remember { mutableStateOf<Square?>(null) }
+            var aiLegalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
+            var isAiThinking by remember { mutableStateOf(false) }
+            var gameStatus by remember { mutableStateOf("Your turn (White)") }
+            var lastAiTaunt by remember { mutableStateOf("") }
+            
+            // Game recording
+            val gameHistory = remember { mutableStateListOf<RecordedMove>() }
+            var showAnalysis by remember { mutableStateOf(false) }
+            var moveCounter by remember { mutableStateOf(1) }
+            
+            // Reset voice to coach pitch when entering AI mode initially
+            LaunchedEffect(Unit) {
+                if (isTtsReady) {
+                    tts?.setPitch(1.15f)
+                    tts?.setSpeechRate(0.95f)
                 }
             }
+            
+            // AI turn
+            LaunchedEffect(isAiThinking) {
+                if (isAiThinking) {
+                    delay(600L)  // Think time
+                    
+                    val bestMove = ChessAI.getBestMove(aiBoard, PieceColor.BLACK)
+                    
+                    if (bestMove != null) {
+                        // Record the AI's move BEFORE applying
+                        val aiMovingPiece = aiBoard[bestMove.from]!!
+                        val aiCapturedPiece = aiBoard[bestMove.to]?.type
+                        gameHistory.add(
+                            RecordedMove(
+                                moveNumber = moveCounter,
+                                color = PieceColor.BLACK,
+                                from = bestMove.from,
+                                to = bestMove.to,
+                                piece = aiMovingPiece.type,
+                                capturedPiece = aiCapturedPiece
+                            )
+                        )
+                        moveCounter++
+                        
+                        aiBoard = applyMove(aiBoard, bestMove.from, bestMove.to)
+                        gameStatus = "Your turn (White)"
+                        
+                        if (bestMove.taunt.isNotEmpty() && isTtsReady) {
+                            tts?.setPitch(0.5f)   // Deep arrogant male
+                            tts?.setSpeechRate(0.85f)
+                            tts?.speak(bestMove.taunt, TextToSpeech.QUEUE_FLUSH, null, null)
+                            lastAiTaunt = bestMove.taunt
+                        } else {
+                            lastAiTaunt = ""
+                        }
+                    } else {
+                        gameStatus = "Checkmate or Stalemate!"
+                        // Auto-show analysis when game ends
+                        delay(1500L)
+                        showAnalysis = true
+                    }
+                    
+                    isAiThinking = false
+                }
+            }
+            
+            Text(gameStatus, color = if (isAiThinking) LightGrey else Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            
+            if (lastAiTaunt.isNotEmpty()) {
+                Text("🤖 \"$lastAiTaunt\"", color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+            }
+            
+            Spacer(Modifier.height(16.dp))
+            
+            Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    for (rank in 7 downTo 0) {
+                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            for (file in 0..7) {
+                                val sq = Square(file, rank)
+                                val piece = aiBoard[sq]
+                                val isDark = (file + rank) % 2 == 1
+                                val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                val isSelected = aiSelectedSquare == sq
+                                val isLegal = aiLegalMoves.contains(sq)
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .background(squareColor)
+                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
+                                        .clickable {
+                                            if (isAiThinking) return@clickable
+                                            
+                                            if (isLegal) {
+                                                // Record the move BEFORE applying
+                                                val movingPiece = aiBoard[aiSelectedSquare!!]!!
+                                                val capturedPiece = aiBoard[sq]?.type
+                                                gameHistory.add(
+                                                    RecordedMove(
+                                                        moveNumber = moveCounter,
+                                                        color = PieceColor.WHITE,
+                                                        from = aiSelectedSquare!!,
+                                                        to = sq,
+                                                        piece = movingPiece.type,
+                                                        capturedPiece = capturedPiece
+                                                    )
+                                                )
+                                                moveCounter++
+                                                
+                                                aiBoard = applyMove(aiBoard, aiSelectedSquare!!, sq)
+                                                aiSelectedSquare = null
+                                                aiLegalMoves = emptyList()
+                                                isAiThinking = true
+                                            } else if (piece != null && piece.color == PieceColor.WHITE) {
+                                                aiSelectedSquare = sq
+                                                aiLegalMoves = getLegalMoves(sq, piece, aiBoard)
+                                            } else {
+                                                aiSelectedSquare = null
+                                                aiLegalMoves = emptyList()
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
+                                    if (piece != null) {
+                                        val symbol = when (piece.type) {
+                                            PieceType.PAWN -> "♟"
+                                            PieceType.KNIGHT -> "♞"
+                                            PieceType.BISHOP -> "♝"
+                                            PieceType.ROOK -> "♜"
+                                            PieceType.QUEEN -> "♛"
+                                            PieceType.KING -> "♚"
+                                        }
+                                        val text = if (piece.color == PieceColor.WHITE) {
+                                            symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
+                                                  .replace("♜","♖").replace("♛","♕").replace("♚","♔")
+                                        } else symbol
+                                        Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            Spacer(Modifier.height(16.dp))
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        aiBoard = getInitialBoard()
+                        aiSelectedSquare = null
+                        aiLegalMoves = emptyList()
+                        isAiThinking = false
+                        gameStatus = "Your turn (White)"
+                        lastAiTaunt = ""
+                        gameHistory.clear()
+                        moveCounter = 1
+                        showAnalysis = false
+                        if (isTtsReady) {
+                            tts?.setPitch(1.15f)
+                            tts?.setSpeechRate(0.95f)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
+                    modifier = Modifier.weight(1f)
+                ) { Text("🔄 Restart") }
+                
+                Button(
+                    onClick = { showAnalysis = true },
+                    enabled = gameHistory.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
+                    modifier = Modifier.weight(1f)
+                ) { Text("📊 Analyze") }
+            }
+            
+            // Analysis Modal
+            if (showAnalysis) {
+                GameAnalysisDialog(
+                    gameHistory = gameHistory,
+                    onDismiss = { showAnalysis = false }
+                )
+            }
+            
             return@Column
         }
 
@@ -367,4 +553,110 @@ fun PracticeScreen() {
             modifier = Modifier.fillMaxWidth()
         ) { Text(if (isSolved) "Next Puzzle ➡️" else "Skip to Next Puzzle") }
     }
+}
+
+
+@Composable
+fun GameAnalysisDialog(
+    gameHistory: List<RecordedMove>,
+    onDismiss: () -> Unit
+) {
+    val whiteMoves = gameHistory.filter { it.color == PieceColor.WHITE }
+    val blackMoves = gameHistory.filter { it.color == PieceColor.BLACK }
+    val blunders = whiteMoves.filter { it.capturedPiece != null }
+    val aiCaptures = blackMoves.filter { it.capturedPiece != null }
+    
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            colors = CardDefaults.cardColors(containerColor = DarkSurface)
+        ) {
+            Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("📊 Game Analysis", color = Orange, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) {
+                        Text("✕", color = White, fontSize = 20.sp)
+                    }
+                }
+                
+                Spacer(Modifier.height(12.dp))
+                
+                // Summary
+                Text("Moves played: ${gameHistory.size}", color = White, fontSize = 14.sp)
+                Text("Your blunders: ${blunders.size} pieces lost", color = if (blunders.isEmpty()) Green else Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text("AI captures: ${aiCaptures.size}", color = LightGrey, fontSize = 14.sp)
+                
+                Spacer(Modifier.height(16.dp))
+                Divider(color = LightGrey.copy(alpha = 0.3f))
+                Spacer(Modifier.height(12.dp))
+                
+                // Move list
+                Text("━━━ Move List ━━━", color = Orange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                
+                val pairs = whiteMoves.zipWithIndex().map { (white, idx) ->
+                    val black = blackMoves.getOrNull(idx)
+                    Pair(white, black)
+                }
+                
+                pairs.forEach { (white, black) ->
+                    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                        Text("${white.moveNumber}. ", color = LightGrey, fontSize = 13.sp, modifier = Modifier.width(28.dp))
+                        Text(squareLabel(white.from) + squareLabel(white.to), color = White, fontSize = 13.sp, modifier = Modifier.width(70.dp))
+                        if (black != null) {
+                            Text(squareLabel(black.from) + squareLabel(black.to), color = Color(0xFFFF6B6B), fontSize = 13.sp, modifier = Modifier.weight(1f))
+                        } else {
+                            Text("—", color = LightGrey, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+                
+                if (blunders.isNotEmpty()) {
+                    Spacer(Modifier.height(16.dp))
+                    Divider(color = LightGrey.copy(alpha = 0.3f))
+                    Spacer(Modifier.height(12.dp))
+                    
+                    Text("━━━ Your Blunders ━━━", color = Color(0xFFFF6B6B), fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    
+                    blunders.forEach { move ->
+                        Text(
+                            "❌ Move ${move.moveNumber}: Lost ${move.capturedPiece?.name?.lowercase() ?: "a piece"}",
+                            color = Color(0xFFFF6B6B),
+                            fontSize = 13.sp
+                        )
+                    }
+                    
+                    Spacer(Modifier.height(12.dp))
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E2A1E))) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("💡 Tips", color = Green, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                if (blunders.size >= 3) {
+                                    "You lost ${blunders.size} pieces. Before each move, ask: is this piece safe here? Defend with another piece, not just position."
+                                } else if (blunders.size >= 1) {
+                                    "Good game! Just ${blunders.size} piece(s) lost. Always check if your destination square is attacked before moving."
+                                } else {
+                                    "Perfect game! You protected all your pieces."
+                                },
+                                color = White,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun squareLabel(sq: Square): String {
+    val file = ('a' + sq.file)
+    val rank = sq.rank + 1
+    return "$file$rank"
 }
