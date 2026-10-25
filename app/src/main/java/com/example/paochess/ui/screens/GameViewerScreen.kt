@@ -30,33 +30,145 @@ data class FamousGame(
 val FAMOUS_GAMES = listOf(
     FamousGame(
         "The Opera Game (Morphy, 1858)",
-        "Paul Morphy vs. the Duke of Brunswick and Count Isouard. Played in a Paris opera box, this game is a masterclass in rapid development and punishing mistakes.",
+        "Paul Morphy vs the Duke of Brunswick. 17 moves. Morphy wins with a brilliant Queen sacrifice.",
         listOf(
-            MoveStep("This is one of the most famous games in chess history. Paul Morphy, playing White, faces the Duke of Brunswick and Count Isouard. The game begins with Morphy playing e4, claiming the center and opening lines for his Queen and Bishop.", Square(4, 1), Square(4, 3)),
-            MoveStep("The Duke replies with e5, copying Morphy's move to fight for the center.", Square(4, 6), Square(4, 4)),
-            MoveStep("Morphy develops his Knight to f3, attacking the Duke's pawn on e5 and preparing to control the center.", Square(6, 0), Square(5, 2)),
-            MoveStep("The Duke makes a passive move, developing his Bishop to c5. This is fine, but it leaves the f2 square slightly weak. Morphy will remember this.", Square(5, 7), Square(2, 4)),
-            MoveStep("Morphy strikes with Bc4, aiming his Bishop directly at the weakest point in the Duke's camp — the f7 pawn.", Square(5, 0), Square(2, 3)),
-            MoveStep("The Duke develops his Knight to c6, defending the center and adding pressure to d4. So far, the game looks balanced.", Square(1, 7), Square(2, 5)),
-            MoveStep("Now Morphy makes a shocking move: he sacrifices his Knight on e5! This is a bold attacking idea. If the Duke takes the Knight, his position will collapse.", Square(5, 2), Square(4, 4)),
-            MoveStep("The Duke makes a critical mistake. He captures the Knight with his own Knight on e5, falling straight into Morphy's trap. He should have been more cautious.", Square(2, 5), Square(4, 4)),
-            MoveStep("Morphy unleashes his Queen to h5! The Queen now attacks the weak f7 square and threatens checkmate. The Duke's King is suddenly in serious danger.", Square(3, 0), Square(7, 4)),
-            MoveStep("The Duke tries to defend with Queen to e7, blocking the checkmate threat. But it's too late — Morphy's attack is already in motion.", Square(3, 7), Square(4, 6)),
-            MoveStep("Morphy sacrifices his Bishop on f7! This brilliant move drags the Duke's King out of safety and opens up the position for the final attack.", Square(2, 3), Square(5, 6)),
-            MoveStep("The Duke is forced to capture the Bishop with his King. The King is now in the open, with no pawns to protect him.", Square(4, 7), Square(5, 6)),
-            MoveStep("Morphy follows up with Queen takes f7! Another sacrifice — Morphy gives up his Queen to keep the attack alive and drag the King further into the open.", Square(7, 4), Square(5, 6)),
-            MoveStep("The Duke must capture the Queen with his King. But now the King is completely exposed in the middle of the board.", Square(5, 6), Square(5, 6)),
-            MoveStep("Morphy brings his Knight to e5 with check! The Knight attacks the King and Morphy's pieces are all swarming around.", Square(5, 2), Square(4, 4)),
-            MoveStep("The Duke retreats his King to f6, running for safety. But there's nowhere to hide.", Square(5, 6), Square(5, 5)),
-            MoveStep("Morphy plays Knight to g4 with check! Another check, and the King is forced to keep moving.", Square(5, 4), Square(6, 3)),
-            MoveStep("The Duke's King moves to g5. The King is running deeper into Morphy's territory.", Square(5, 5), Square(6, 4)),
-            MoveStep("Morphy checks again with Knight to f6! The King is being chased all over the board.", Square(6, 3), Square(5, 5)),
-            MoveStep("The Duke moves his King to g6. He's still running, but his options are running out.", Square(6, 4), Square(6, 5)),
-            MoveStep("Morphy brings his Bishop to c1 with check! A quiet but deadly discovered attack.", Square(2, 0), Square(2, 0)),
-            MoveStep("The Duke moves his King to g7, hoping to find safety. But the storm isn't over.", Square(6, 5), Square(6, 6)),
-            MoveStep("Morphy plays Rook to h3 with check! Every White piece is now attacking the Duke's King.", Square(7, 0), Square(7, 2)),
-            MoveStep("The Duke makes his final mistake, capturing the Rook with his King. This allows Morphy to deliver the final blow.", Square(6, 6), Square(7, 2)),
-            MoveStep("Morphy delivers the final blow with Queen to g4! Checkmate. This is one of the most brilliant attacking games in chess history. Morphy sacrificed his Queen, both Bishops, and a Rook to win.", Square(7, 4), Square(6, 3))
+            MoveStep("Morphy plays e4, claiming the center.", Square(4, 1), Square(4, 3)),
+            MoveStep("The Duke replies with e5, mirroring.", Square(4, 6), Square(4, 4)),
+            MoveStep("Morphy develops Nf3, attacking e5.", Square(6, 0), Square(5, 2)),
+            MoveStep("The Duke plays d6, a passive move.", Square(3, 6), Square(3, 5)),
+            MoveStep("Morphy plays d4, striking the center.", Square(3, 1), Square(3, 3)),
+            MoveStep("The Duke plays Bg4, pinning the Knight.", Square(2, 7), Square(6, 3)),
+            MoveStep("Morphy plays dxe5, capturing.", Square(3, 3), Square(4, 4)),
+            MoveStep("The Duke plays Bxf3, capturing the Knight.", Square(6, 3), Square(5, 2)),
+            MoveStep("Morphy recaptures with Qxf3.", Square(3, 0), Square(5, 2)),
+            MoveStep("The Duke plays dxe5, taking back.", Square(3, 5), Square(4, 4)),
+            MoveStep("Morphy plays Bc4, aiming at f7.", Square(5, 0), Square(2, 3)),
+            MoveStep("The Duke plays Nf6, developing.", Square(6, 7), Square(5, 5)),
+            MoveStep("Morphy plays Qb3, attacking f7.", Square(5, 2), Square(1, 2)),
+            MoveStep("The Duke defends with Qe7.", Square(3, 7), Square(4, 6)),
+            MoveStep("Morphy develops Nc3.", Square(1, 0), Square(2, 2)),
+            MoveStep("The Duke plays c6.", Square(2, 6), Square(2, 5)),
+            MoveStep("Morphy plays Bg5, pinning the Knight.", Square(2, 0), Square(6, 4)),
+            MoveStep("The Duke plays b5, attacking the Bishop.", Square(1, 6), Square(1, 4)),
+            MoveStep("Morphy sacrifices with Nxb5!", Square(2, 2), Square(1, 4)),
+            MoveStep("The Duke plays cxb5, taking.", Square(2, 5), Square(1, 4)),
+            MoveStep("Morphy plays Bxb5+, checking.", Square(2, 3), Square(1, 4)),
+            MoveStep("The Duke blocks with Nbd7.", Square(1, 7), Square(3, 6)),
+            MoveStep("Morphy castles queenside (O-O-O).", Square(4, 0), Square(2, 0)),
+            MoveStep("The Duke plays Rd8.", Square(0, 7), Square(3, 7)),
+            MoveStep("Morphy plays Rxd7!", Square(3, 0), Square(3, 6)),
+            MoveStep("The Duke plays Rxd7, recapturing.", Square(3, 7), Square(3, 6)),
+            MoveStep("Morphy plays Rd1, targeting the Queen.", Square(7, 0), Square(3, 0)),
+            MoveStep("The Duke defends with Qe6.", Square(4, 6), Square(4, 5)),
+            MoveStep("Morphy plays Bxd7+, checking.", Square(1, 4), Square(3, 6)),
+            MoveStep("The Duke recaptures with Nxd7.", Square(5, 5), Square(3, 6)),
+            MoveStep("Morphy sacrifices his Queen with Qb8+!", Square(1, 2), Square(1, 7)),
+            MoveStep("The Duke takes with Nxb8.", Square(3, 6), Square(1, 7)),
+            MoveStep("Morphy delivers mate with Rd8#!", Square(3, 0), Square(3, 7))
+        )
+    ),
+    FamousGame(
+        "The Immortal Game (Anderssen, 1851)",
+        "Anderssen vs. Kieseritzky. Sacrifices both Rooks, a Bishop, and his Queen to deliver mate.",
+        listOf(
+            MoveStep("White plays e4", Square(4, 1), Square(4, 3)),
+            MoveStep("Black plays e5", Square(4, 6), Square(4, 4)),
+            MoveStep("White plays f4", Square(5, 1), Square(5, 3)),
+            MoveStep("Black plays exf4, capturing on f4", Square(4, 4), Square(5, 3)),
+            MoveStep("White plays Bc4", Square(5, 0), Square(2, 3)),
+            MoveStep("Black plays Qh4+", Square(3, 7), Square(7, 3)),
+            MoveStep("White plays Kf1", Square(4, 0), Square(5, 0)),
+            MoveStep("Black plays b5", Square(1, 6), Square(1, 4)),
+            MoveStep("White plays Bxb5, capturing on b5", Square(2, 3), Square(1, 4)),
+            MoveStep("Black plays Nf6", Square(6, 7), Square(5, 5)),
+            MoveStep("White plays Nf3", Square(6, 0), Square(5, 2)),
+            MoveStep("Black plays Qh6", Square(7, 3), Square(7, 5)),
+            MoveStep("White plays d3", Square(3, 1), Square(3, 2)),
+            MoveStep("Black plays Nh5", Square(5, 5), Square(7, 4)),
+            MoveStep("White plays Nh4", Square(5, 2), Square(7, 3)),
+            MoveStep("Black plays Qg5", Square(7, 5), Square(6, 4)),
+            MoveStep("White plays Nf5", Square(7, 3), Square(5, 4)),
+            MoveStep("Black plays c6", Square(2, 6), Square(2, 5)),
+            MoveStep("White plays g4", Square(6, 1), Square(6, 3)),
+            MoveStep("Black plays Nf6", Square(7, 4), Square(5, 5)),
+            MoveStep("White plays Rg1", Square(7, 0), Square(6, 0)),
+            MoveStep("Black plays cxb5, capturing on b5", Square(2, 5), Square(1, 4)),
+            MoveStep("White plays h4", Square(7, 1), Square(7, 3)),
+            MoveStep("Black plays Qg6", Square(6, 4), Square(6, 5)),
+            MoveStep("White plays h5", Square(7, 3), Square(7, 4)),
+            MoveStep("Black plays Qg5", Square(6, 5), Square(6, 4)),
+            MoveStep("White plays Qf3", Square(3, 0), Square(5, 2)),
+            MoveStep("Black plays Ng8", Square(5, 5), Square(6, 7)),
+            MoveStep("White plays Bxf4, capturing on f4", Square(2, 0), Square(5, 3)),
+            MoveStep("Black plays Qf6", Square(6, 4), Square(5, 5)),
+            MoveStep("White plays Nc3", Square(1, 0), Square(2, 2)),
+            MoveStep("Black plays Bc5", Square(5, 7), Square(2, 4)),
+            MoveStep("White plays Nd5", Square(2, 2), Square(3, 4)),
+            MoveStep("Black plays Qxb2, capturing on b2", Square(5, 5), Square(1, 1)),
+            MoveStep("White plays Bd6", Square(5, 3), Square(3, 5)),
+            MoveStep("Black plays Bxg1, capturing on g1", Square(2, 4), Square(6, 0)),
+            MoveStep("White plays e5", Square(4, 3), Square(4, 4)),
+            MoveStep("Black plays Qxa1+, capturing on a1", Square(1, 1), Square(0, 0)),
+            MoveStep("White plays Ke2", Square(5, 0), Square(4, 1)),
+            MoveStep("Black plays Na6", Square(1, 7), Square(0, 5)),
+            MoveStep("White plays Nxg7+, capturing on g7", Square(5, 4), Square(6, 6)),
+            MoveStep("Black plays Kd8", Square(4, 7), Square(3, 7)),
+            MoveStep("White plays Qf6+", Square(5, 2), Square(5, 5)),
+            MoveStep("Black plays Nxf6, capturing on f6", Square(6, 7), Square(5, 5)),
+            MoveStep("White plays Be7#", Square(3, 5), Square(4, 6))
+        )
+    ),
+    FamousGame(
+        "The Evergreen Game (Anderssen, 1852)",
+        "Anderssen vs. Dufresne. Another brilliant attacking masterpiece ending in Bishop mate.",
+        listOf(
+            MoveStep("White plays e4", Square(4, 1), Square(4, 3)),
+            MoveStep("Black plays e5", Square(4, 6), Square(4, 4)),
+            MoveStep("White plays Nf3", Square(6, 0), Square(5, 2)),
+            MoveStep("Black plays Nc6", Square(1, 7), Square(2, 5)),
+            MoveStep("White plays Bc4", Square(5, 0), Square(2, 3)),
+            MoveStep("Black plays Bc5", Square(5, 7), Square(2, 4)),
+            MoveStep("White plays b4", Square(1, 1), Square(1, 3)),
+            MoveStep("Black plays Bxb4, capturing on b4", Square(2, 4), Square(1, 3)),
+            MoveStep("White plays c3", Square(2, 1), Square(2, 2)),
+            MoveStep("Black plays Ba5", Square(1, 3), Square(0, 4)),
+            MoveStep("White plays d4", Square(3, 1), Square(3, 3)),
+            MoveStep("Black plays exd4, capturing on d4", Square(4, 4), Square(3, 3)),
+            MoveStep("White castles kingside (O-O)", Square(4, 0), Square(6, 0)),
+            MoveStep("Black plays d3", Square(3, 3), Square(3, 2)),
+            MoveStep("White plays Qb3", Square(3, 0), Square(1, 2)),
+            MoveStep("Black plays Qf6", Square(3, 7), Square(5, 5)),
+            MoveStep("White plays e5", Square(4, 3), Square(4, 4)),
+            MoveStep("Black plays Qg6", Square(5, 5), Square(6, 5)),
+            MoveStep("White plays Re1", Square(5, 0), Square(4, 0)),
+            MoveStep("Black plays Nge7", Square(6, 7), Square(4, 6)),
+            MoveStep("White plays Ba3", Square(2, 0), Square(0, 2)),
+            MoveStep("Black plays b5", Square(1, 6), Square(1, 4)),
+            MoveStep("White plays Qxb5, capturing on b5", Square(1, 2), Square(1, 4)),
+            MoveStep("Black plays Rb8", Square(0, 7), Square(1, 7)),
+            MoveStep("White plays Qa4", Square(1, 4), Square(0, 3)),
+            MoveStep("Black plays Bb6", Square(0, 4), Square(1, 5)),
+            MoveStep("White plays Nbd2", Square(1, 0), Square(3, 1)),
+            MoveStep("Black plays Bb7", Square(2, 7), Square(1, 6)),
+            MoveStep("White plays Ne4", Square(3, 1), Square(4, 3)),
+            MoveStep("Black plays Qf5", Square(6, 5), Square(5, 4)),
+            MoveStep("White plays Bxd3, capturing on d3", Square(2, 3), Square(3, 2)),
+            MoveStep("Black plays Qh5", Square(5, 4), Square(7, 4)),
+            MoveStep("White plays Nf6+", Square(4, 3), Square(5, 5)),
+            MoveStep("Black plays gxf6, capturing on f6", Square(6, 6), Square(5, 5)),
+            MoveStep("White plays exf6, capturing on f6", Square(4, 4), Square(5, 5)),
+            MoveStep("Black plays Rg8", Square(7, 7), Square(6, 7)),
+            MoveStep("White plays Rad1", Square(0, 0), Square(3, 0)),
+            MoveStep("Black plays Qxf3, capturing on f3", Square(7, 4), Square(5, 2)),
+            MoveStep("White plays Rxe7+, capturing on e7", Square(4, 0), Square(4, 6)),
+            MoveStep("Black plays Nxe7, capturing on e7", Square(2, 5), Square(4, 6)),
+            MoveStep("White plays Qxd7+, capturing on d7", Square(0, 3), Square(3, 6)),
+            MoveStep("Black plays Kxd7, capturing on d7", Square(4, 7), Square(3, 6)),
+            MoveStep("White plays Bf5+", Square(3, 2), Square(5, 4)),
+            MoveStep("Black plays Ke8", Square(3, 6), Square(4, 7)),
+            MoveStep("White plays Bd7+", Square(5, 4), Square(3, 6)),
+            MoveStep("Black plays Kf8", Square(4, 7), Square(5, 7)),
+            MoveStep("White plays Bxe7#, capturing on e7", Square(0, 2), Square(4, 6))
         )
     )
 )
@@ -191,7 +303,38 @@ fun GameViewerScreen() {
     Column(modifier = Modifier.fillMaxSize().background(DarkBg).verticalScroll(rememberScrollState()).padding(16.dp)) {
         Text("🎥 Famous Games", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-        Text(game.name, color = White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        
+        // Game selector — one button per famous game
+        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FAMOUS_GAMES.forEachIndexed { idx, g ->
+                Button(
+                    onClick = {
+                        if (currentGameIndex != idx) {
+                            currentGameIndex = idx
+                            currentStep = 0
+                            isPlaying = false
+                            tts?.stop()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentGameIndex == idx) Orange else DarkSurface,
+                        contentColor = if (currentGameIndex == idx) Color.Black else White
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        g.name,
+                        fontSize = 12.sp,
+                        fontWeight = if (currentGameIndex == idx) FontWeight.Bold else FontWeight.Normal,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+        
+        Spacer(Modifier.height(12.dp))
+        Text(game.name, color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         Text(game.description, color = LightGrey, fontSize = 14.sp, lineHeight = 18.sp)
         Spacer(Modifier.height(16.dp))
 
