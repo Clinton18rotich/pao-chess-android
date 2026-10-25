@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
 import java.util.Locale
@@ -186,8 +187,12 @@ fun PracticeScreen() {
                         
                         aiBoard = applyMove(aiBoard, bestMove.from, bestMove.to)
                         capturedSquareFlash = null
-                        aiThinkingText = ""
                         gameStatus = "Your turn (White)"
+                        // Keep aiThinkingText visible — cleared via delayed launch below
+                        launch {
+                            delay(3000L)
+                            aiThinkingText = ""
+                        }
                         
                         if (bestMove.taunt.isNotEmpty() && isTtsReady) {
                             tts?.setPitch(0.5f)
@@ -211,7 +216,19 @@ fun PracticeScreen() {
             
             // AI reasoning text (before capture)
             if (aiThinkingText.isNotEmpty()) {
-                Text(aiThinkingText, color = Color(0xFFFCA311), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF3A2A00))
+                ) {
+                    Text(
+                        aiThinkingText,
+                        color = Color(0xFFFFD700),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(10.dp),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
             }
             
             if (lastAiTaunt.isNotEmpty()) {
