@@ -218,83 +218,147 @@ fun PracticeScreen() {
             
             Spacer(Modifier.height(16.dp))
             
-            Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    for (rank in 7 downTo 0) {
-                        Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-                            for (file in 0..7) {
-                                val sq = Square(file, rank)
-                                val piece = aiBoard[sq]
-                                val isDark = (file + rank) % 2 == 1
-                                val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
-                                val isSelected = aiSelectedSquare == sq
-                                val isLegal = aiLegalMoves.contains(sq)
-                                
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .background(squareColor)
-                                        .border(
-                                            width = if (isSelected || capturedSquareFlash == sq) 3.dp else 0.dp,
-                                            color = when {
-                                                isSelected -> Orange
-                                                capturedSquareFlash == sq -> Color.Red
-                                                else -> Color.Transparent
-                                            }
-                                        )
-                                        .clickable {
-                                            if (isAiThinking) return@clickable
-                                            
-                                            if (isLegal) {
-                                                // Record the move BEFORE applying
-                                                val movingPiece = aiBoard[aiSelectedSquare!!]!!
-                                                val capturedPiece = aiBoard[sq]?.type
-                                                gameHistory.add(
-                                                    RecordedMove(
-                                                        moveNumber = moveCounter,
-                                                        color = PieceColor.WHITE,
-                                                        from = aiSelectedSquare!!,
-                                                        to = sq,
-                                                        piece = movingPiece.type,
-                                                        capturedPiece = capturedPiece
-                                                    )
+            // Board with coordinates on all four sides
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Top file labels (a-h)
+                Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp)) {
+                    for (file in 0..7) {
+                        Text(
+                            "${'a' + file}",
+                            color = LightGrey,
+                            fontSize = 10.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+                
+                // Left rank labels + Board + Right rank labels
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    // Left rank labels (8-1)
+                    Column(
+                        modifier = Modifier.width(16.dp).aspectRatio(1f / 8f),
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        for (rank in 7 downTo 0) {
+                            Text(
+                                "${rank + 1}",
+                                color = LightGrey,
+                                fontSize = 10.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.weight(1f).fillMaxWidth()
+                            )
+                        }
+                    }
+                    
+                    // Board
+                    Box(modifier = Modifier.weight(1f).aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            for (rank in 7 downTo 0) {
+                                Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                                    for (file in 0..7) {
+                                        val sq = Square(file, rank)
+                                        val piece = aiBoard[sq]
+                                        val isDark = (file + rank) % 2 == 1
+                                        val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                        val isSelected = aiSelectedSquare == sq
+                                        val isLegal = aiLegalMoves.contains(sq)
+                                        
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxHeight()
+                                                .background(squareColor)
+                                                .border(
+                                                    width = if (isSelected || capturedSquareFlash == sq) 3.dp else 0.dp,
+                                                    color = when {
+                                                        isSelected -> Orange
+                                                        capturedSquareFlash == sq -> Color.Red
+                                                        else -> Color.Transparent
+                                                    }
                                                 )
-                                                moveCounter++
-                                                
-                                                aiBoard = applyMove(aiBoard, aiSelectedSquare!!, sq)
-                                                aiSelectedSquare = null
-                                                aiLegalMoves = emptyList()
-                                                isAiThinking = true
-                                            } else if (piece != null && piece.color == PieceColor.WHITE) {
-                                                aiSelectedSquare = sq
-                                                aiLegalMoves = getLegalMoves(sq, piece, aiBoard)
-                                            } else {
-                                                aiSelectedSquare = null
-                                                aiLegalMoves = emptyList()
+                                                .clickable {
+                                                    if (isAiThinking) return@clickable
+                                                    
+                                                    if (isLegal) {
+                                                        val movingPiece = aiBoard[aiSelectedSquare!!]!!
+                                                        val capturedPiece = aiBoard[sq]?.type
+                                                        gameHistory.add(
+                                                            RecordedMove(
+                                                                moveNumber = moveCounter,
+                                                                color = PieceColor.WHITE,
+                                                                from = aiSelectedSquare!!,
+                                                                to = sq,
+                                                                piece = movingPiece.type,
+                                                                capturedPiece = capturedPiece
+                                                            )
+                                                        )
+                                                        moveCounter++
+                                                        
+                                                        aiBoard = applyMove(aiBoard, aiSelectedSquare!!, sq)
+                                                        aiSelectedSquare = null
+                                                        aiLegalMoves = emptyList()
+                                                        isAiThinking = true
+                                                    } else if (piece != null && piece.color == PieceColor.WHITE) {
+                                                        aiSelectedSquare = sq
+                                                        aiLegalMoves = getLegalMoves(sq, piece, aiBoard)
+                                                    } else {
+                                                        aiSelectedSquare = null
+                                                        aiLegalMoves = emptyList()
+                                                    }
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
+                                            if (piece != null) {
+                                                val symbol = when (piece.type) {
+                                                    PieceType.PAWN -> "♟"
+                                                    PieceType.KNIGHT -> "♞"
+                                                    PieceType.BISHOP -> "♝"
+                                                    PieceType.ROOK -> "♜"
+                                                    PieceType.QUEEN -> "♛"
+                                                    PieceType.KING -> "♚"
+                                                }
+                                                val text = if (piece.color == PieceColor.WHITE) {
+                                                    symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
+                                                          .replace("♜","♖").replace("♛","♕").replace("♚","♔")
+                                                } else symbol
+                                                Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                                             }
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (isLegal) Box(modifier = Modifier.size(12.dp).background(Color(0x8000FF00), CircleShape))
-                                    if (piece != null) {
-                                        val symbol = when (piece.type) {
-                                            PieceType.PAWN -> "♟"
-                                            PieceType.KNIGHT -> "♞"
-                                            PieceType.BISHOP -> "♝"
-                                            PieceType.ROOK -> "♜"
-                                            PieceType.QUEEN -> "♛"
-                                            PieceType.KING -> "♚"
                                         }
-                                        val text = if (piece.color == PieceColor.WHITE) {
-                                            symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
-                                                  .replace("♜","♖").replace("♛","♕").replace("♚","♔")
-                                        } else symbol
-                                        Text(text = text, color = Color.Black, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
                         }
+                    }
+                    
+                    // Right rank labels (8-1)
+                    Column(
+                        modifier = Modifier.width(16.dp).aspectRatio(1f / 8f),
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        for (rank in 7 downTo 0) {
+                            Text(
+                                "${rank + 1}",
+                                color = LightGrey,
+                                fontSize = 10.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.weight(1f).fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+                
+                // Bottom file labels (a-h)
+                Row(modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp)) {
+                    for (file in 0..7) {
+                        Text(
+                            "${'a' + file}",
+                            color = LightGrey,
+                            fontSize = 10.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
             }
@@ -388,14 +452,7 @@ fun PracticeScreen() {
                                         .weight(1f)
                                         .fillMaxHeight()
                                         .background(squareColor)
-                                        .border(
-                                            width = if (isSelected || capturedSquareFlash == sq) 3.dp else 0.dp,
-                                            color = when {
-                                                isSelected -> Orange
-                                                capturedSquareFlash == sq -> Color.Red
-                                                else -> Color.Transparent
-                                            }
-                                        )
+                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
                                         .clickable {
                                             if (fenSolved) return@clickable
 
@@ -602,6 +659,7 @@ fun GameAnalysisDialog(
     val blackMoves = gameHistory.filter { it.color == PieceColor.BLACK }
     val blunders = whiteMoves.filter { it.capturedPiece != null }
     val aiCaptures = blackMoves.filter { it.capturedPiece != null }
+    val aiAttacks = whiteMoves.count { it.to != null }  // Simplification: count all moves as attacks
     
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -631,7 +689,7 @@ fun GameAnalysisDialog(
                 Divider(color = LightGrey.copy(alpha = 0.3f))
                 Spacer(Modifier.height(12.dp))
                 
-                // Move list
+                // Move list with annotations
                 Text("━━━ Move List ━━━", color = Orange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 
@@ -639,12 +697,34 @@ fun GameAnalysisDialog(
                     Pair(white, blackMoves.getOrNull(idx))
                 }
                 
+                // Track captured squares for warning annotation
+                val capturedSquares = mutableSetOf<Pair<Int, Int>>()
+                gameHistory.filter { it.capturedPiece != null }.forEach { move ->
+                    capturedSquares.add(Pair(move.to.file, move.to.rank))
+                }
+                
                 pairs.forEach { (white, black) ->
                     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                         Text("${white.moveNumber}. ", color = LightGrey, fontSize = 13.sp, modifier = Modifier.width(28.dp))
-                        Text(squareLabel(white.from) + squareLabel(white.to), color = White, fontSize = 13.sp, modifier = Modifier.width(70.dp))
+                        
+                        // White move with warning if it was captured
+                        val whiteSquare = Pair(white.to.file, white.to.rank)
+                        val whiteWarning = if (capturedSquares.contains(whiteSquare)) " ⚠" else ""
+                        Text(
+                            squareLabel(white.from) + squareLabel(white.to) + whiteWarning,
+                            color = if (whiteWarning.isNotEmpty()) Color(0xFFFFB300) else White,
+                            fontSize = 13.sp,
+                            modifier = Modifier.width(95.dp)
+                        )
+                        
+                        // Black move
                         if (black != null) {
-                            Text(squareLabel(black.from) + squareLabel(black.to), color = Color(0xFFFF6B6B), fontSize = 13.sp, modifier = Modifier.weight(1f))
+                            Text(
+                                squareLabel(black.from) + squareLabel(black.to),
+                                color = Color(0xFFFF6B6B),
+                                fontSize = 13.sp,
+                                modifier = Modifier.weight(1f)
+                            )
                         } else {
                             Text("—", color = LightGrey, fontSize = 13.sp, modifier = Modifier.weight(1f))
                         }
@@ -660,32 +740,54 @@ fun GameAnalysisDialog(
                     Spacer(Modifier.height(8.dp))
                     
                     blunders.forEach { move ->
+                        val squareName = "${'a' + move.to.file}${move.to.rank + 1}"
+                        val pieceName = move.capturedPiece?.name?.lowercase() ?: "piece"
                         Text(
-                            "❌ Move ${move.moveNumber}: Lost ${move.capturedPiece?.name?.lowercase() ?: "a piece"}",
+                            "❌ Move ${move.moveNumber}: Lost $pieceName on $squareName",
                             color = Color(0xFFFF6B6B),
                             fontSize = 13.sp
                         )
                     }
-                    
-                    Spacer(Modifier.height(12.dp))
-                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E2A1E))) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("💡 Tips", color = Green, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                if (blunders.size >= 3) {
-                                    "You lost ${blunders.size} pieces. Before each move, ask: is this piece safe here? Defend with another piece, not just position."
-                                } else if (blunders.size >= 1) {
-                                    "Good game! Just ${blunders.size} piece(s) lost. Always check if your destination square is attacked before moving."
-                                } else {
-                                    "Perfect game! You protected all your pieces."
-                                },
-                                color = White,
-                                fontSize = 13.sp
-                            )
-                        }
+                }
+                
+                // Tactical Summary
+                Spacer(Modifier.height(16.dp))
+                Divider(color = LightGrey.copy(alpha = 0.3f))
+                Spacer(Modifier.height(12.dp))
+                
+                Text("━━━ Tactical Summary ━━━", color = Orange, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                
+                Text("Your moves: ${whiteMoves.size}", color = White, fontSize = 13.sp)
+                Text("AI moves: ${blackMoves.size}", color = White, fontSize = 13.sp)
+                Text("Your pieces lost: ${blunders.size}", color = Color(0xFFFF6B6B), fontSize = 13.sp)
+                Text("AI pieces lost: ${aiCaptures.size}", color = Green, fontSize = 13.sp)
+                
+                Spacer(Modifier.height(8.dp))
+                
+                val lesson = when {
+                    blunders.isEmpty() && gameHistory.size > 10 -> "⭐ Excellent! You protected all pieces in a full game."
+                    blunders.isEmpty() -> "Good start. Play longer to test your defenses."
+                    blunders.size <= 2 -> "You lost ${blunders.size} pieces. Focus on defending before attacking."
+                    blunders.size <= 5 -> "You lost ${blunders.size} pieces. Before each move, ask: is this piece safe?"
+                    else -> "You lost ${blunders.size} pieces. Practice defending. Every move should protect your pieces from attack."
+                }
+                
+                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF1E2A1E))) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("💡 Lesson", color = Green, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        Text(lesson, color = White, fontSize = 13.sp)
                     }
                 }
+                
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "⚠ = piece was captured on this square",
+                    color = LightGrey,
+                    fontSize = 11.sp,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
             }
         }
     }
