@@ -74,10 +74,13 @@ object ChessAI {
             val capturedPiece = board[bestMove.to]
             var taunt = ""
             if (capturedPiece != null) {
+                val squareName = "${'a' + bestMove.to.file}${bestMove.to.rank + 1}"
+                val pieceName = capturedPiece.type.name.lowercase()
                 taunt = when (capturedPiece.type) {
-                    PieceType.QUEEN -> queenTaunts.random()
-                    PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT -> "You just hung your ${capturedPiece.type.name.lowercase()}! ${blunderTaunts.random()}"
-                    PieceType.PAWN -> "Free pawn. ${blunderTaunts.random()}"
+                    PieceType.QUEEN -> "You left your Queen on $squareName undefended. ${queenTaunts.random()}"
+                    PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT -> 
+                        "Your $pieceName on $squareName was completely undefended. ${blunderTaunts.random()}"
+                    PieceType.PAWN -> "Free pawn on $squareName. ${blunderTaunts.random()}"
                     else -> blunderTaunts.random()
                 }
             }

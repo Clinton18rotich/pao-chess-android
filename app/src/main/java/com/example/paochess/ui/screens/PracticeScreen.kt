@@ -129,6 +129,8 @@ fun PracticeScreen() {
             var isAiThinking by remember { mutableStateOf(false) }
             var gameStatus by remember { mutableStateOf("Your turn (White)") }
             var lastAiTaunt by remember { mutableStateOf("") }
+            var capturedSquareFlash by remember { mutableStateOf<Square?>(null) }
+            var aiThinkingText by remember { mutableStateOf("") }
             
             // Game recording
             val gameHistory = remember { mutableStateListOf<RecordedMove>() }
@@ -154,6 +156,20 @@ fun PracticeScreen() {
                         // Record the AI's move BEFORE applying
                         val aiMovingPiece = aiBoard[bestMove.from]!!
                         val aiCapturedPiece = aiBoard[bestMove.to]?.type
+                        
+                        // Show "thinking" text with reasoning
+                        aiThinkingText = if (aiCapturedPiece != null) {
+                            val targetSquare = "${'a' + bestMove.to.file}${bestMove.to.rank + 1}"
+                            "🤖 AI sees your ${aiCapturedPiece.name.lowercase()} on $targetSquare is undefended..."
+                        } else {
+                            "🤖 AI is evaluating the position..."
+                        }
+                        
+                        // Flash the target square red for visibility
+                        capturedSquareFlash = bestMove.to
+                        delay(600L)  // 600ms flash
+                        
+                        // Now make the move
                         gameHistory.add(
                             RecordedMove(
                                 moveNumber = moveCounter,
@@ -167,10 +183,12 @@ fun PracticeScreen() {
                         moveCounter++
                         
                         aiBoard = applyMove(aiBoard, bestMove.from, bestMove.to)
+                        capturedSquareFlash = null
+                        aiThinkingText = ""
                         gameStatus = "Your turn (White)"
                         
                         if (bestMove.taunt.isNotEmpty() && isTtsReady) {
-                            tts?.setPitch(0.5f)   // Deep arrogant male
+                            tts?.setPitch(0.5f)
                             tts?.setSpeechRate(0.85f)
                             tts?.speak(bestMove.taunt, TextToSpeech.QUEUE_FLUSH, null, null)
                             lastAiTaunt = bestMove.taunt
@@ -179,7 +197,6 @@ fun PracticeScreen() {
                         }
                     } else {
                         gameStatus = "Checkmate or Stalemate!"
-                        // Auto-show analysis when game ends
                         delay(1500L)
                         showAnalysis = true
                     }
@@ -189,6 +206,11 @@ fun PracticeScreen() {
             }
             
             Text(gameStatus, color = if (isAiThinking) LightGrey else Green, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            
+            // AI reasoning text (before capture)
+            if (aiThinkingText.isNotEmpty()) {
+                Text(aiThinkingText, color = Color(0xFFFCA311), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
+            }
             
             if (lastAiTaunt.isNotEmpty()) {
                 Text("🤖 \"$lastAiTaunt\"", color = Color(0xFFFF6B6B), fontSize = 14.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
@@ -213,7 +235,14 @@ fun PracticeScreen() {
                                         .weight(1f)
                                         .fillMaxHeight()
                                         .background(squareColor)
-                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
+                                        .border(
+                                            width = if (isSelected || capturedSquareFlash == sq) 3.dp else 0.dp,
+                                            color = when {
+                                                isSelected -> Orange
+                                                capturedSquareFlash == sq -> Color.Red
+                                                else -> Color.Transparent
+                                            }
+                                        )
                                         .clickable {
                                             if (isAiThinking) return@clickable
                                             
@@ -359,7 +388,14 @@ fun PracticeScreen() {
                                         .weight(1f)
                                         .fillMaxHeight()
                                         .background(squareColor)
-                                        .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
+                                        .border(
+                                            width = if (isSelected || capturedSquareFlash == sq) 3.dp else 0.dp,
+                                            color = when {
+                                                isSelected -> Orange
+                                                capturedSquareFlash == sq -> Color.Red
+                                                else -> Color.Transparent
+                                            }
+                                        )
                                         .clickable {
                                             if (fenSolved) return@clickable
 
