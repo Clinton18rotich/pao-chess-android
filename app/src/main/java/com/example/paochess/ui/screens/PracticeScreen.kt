@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -135,6 +136,7 @@ fun PracticeScreen() {
             // Game recording
             val gameHistory = remember { mutableStateListOf<RecordedMove>() }
             var showAnalysis by remember { mutableStateOf(false) }
+            var showReplay by remember { mutableStateOf(false) }
             var moveCounter by remember { mutableStateOf(1) }
             
             // Reset voice to coach pitch when entering AI mode initially
@@ -234,10 +236,10 @@ fun PracticeScreen() {
                 }
                 
                 // Left rank labels + Board + Right rank labels
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
                     // Left rank labels (8-1)
                     Column(
-                        modifier = Modifier.width(16.dp).aspectRatio(1f / 8f),
+                        modifier = Modifier.width(16.dp).fillMaxHeight(),
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
                         for (rank in 7 downTo 0) {
@@ -334,7 +336,7 @@ fun PracticeScreen() {
                     
                     // Right rank labels (8-1)
                     Column(
-                        modifier = Modifier.width(16.dp).aspectRatio(1f / 8f),
+                        modifier = Modifier.width(16.dp).fillMaxHeight(),
                         verticalArrangement = Arrangement.SpaceEvenly
                     ) {
                         for (rank in 7 downTo 0) {
@@ -392,6 +394,21 @@ fun PracticeScreen() {
                     colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
                     modifier = Modifier.weight(1f)
                 ) { Text("📊 Analyze") }
+                
+                Button(
+                    onClick = { showReplay = true },
+                    enabled = gameHistory.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50), contentColor = Color.Black),
+                    modifier = Modifier.weight(1f)
+                ) { Text("▶ Replay") }
+            }
+            
+            // Replay Modal
+            if (showReplay) {
+                GameReplayDialog(
+                    gameHistory = gameHistory,
+                    onDismiss = { showReplay = false }
+                )
             }
             
             // Analysis Modal
@@ -797,4 +814,273 @@ fun squareLabel(sq: Square): String {
     val file = ('a' + sq.file)
     val rank = sq.rank + 1
     return "$file$rank"
+}
+
+
+@Composable
+fun GameReplayDialog(
+    gameHistory: List<RecordedMove>,
+    onDismiss: () -> Unit
+) {
+    var replayStep by remember { mutableStateOf(0) }
+    var isPlaying by remember { mutableStateOf(false) }
+    
+    // Board state at current replay step
+    val replayBoard = remember(replayStep) {
+        var b = getInitialBoard()
+        for (i in 0 until replayStep) {
+            val move = gameHistory[i]
+            b = applyMove(b, move.from, move.to)
+        }
+        b
+    }
+    
+    // Last move info
+    val lastMove = if (replayStep > 0) gameHistory[replayStep - 1] else null
+    
+    // Auto-play effect
+    LaunchedEffect(isPlaying, replayStep) {
+        if (isPlaying) {
+            if (replayStep < gameHistory.size) {
+                kotlinx.coroutines.delay(1500L)
+                replayStep++
+            } else {
+                isPlaying = false
+            }
+        }
+    }
+    
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            colors = CardDefaults.cardColors(containerColor = DarkSurface)
+        ) {
+            Column(modifier = Modifier.padding(12.dp).verticalScroll(rememberScrollState())) {
+                // Header
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("▶ Game Replay", color = Orange, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) {
+                        Text("✕", color = White, fontSize = 20.sp)
+                    }
+                }
+                
+                Spacer(Modifier.height(8.dp))
+                
+                // Move counter
+                Text(
+                    "Move ${replayStep} / ${gameHistory.size}",
+                    color = White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                // Last move description
+                if (lastMove != null) {
+                    val color = if (lastMove.color == PieceColor.WHITE) White else Color(0xFFFF6B6B)
+                    val colorName = if (lastMove.color == PieceColor.WHITE) "White" else "Black"
+                    Text(
+                        "$colorName ${lastMove.piece.name.lowercase()}: " +
+                        "${'a' + lastMove.from.file}${lastMove.from.rank + 1} → " +
+                        "${'a' + lastMove.to.file}${lastMove.to.rank + 1}",
+                        color = color,
+                        fontSize = 13.sp
+                    )
+                } else {
+                    Text("Initial position", color = LightGrey, fontSize = 13.sp)
+                }
+                
+                Spacer(Modifier.height(8.dp))
+                
+                // Board with coordinates (reused style from AI mode)
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Top file labels
+                    Row(modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp)) {
+                        for (file in 0..7) {
+                            Text(
+                                "${'a' + file}",
+                                color = LightGrey,
+                                fontSize = 9.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    
+                    // Left labels + Board + Right labels
+                    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+                        // Left
+                        Column(
+                            modifier = Modifier.width(14.dp).fillMaxHeight(),
+                            verticalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            for (rank in 7 downTo 0) {
+                                Box(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("${rank + 1}", color = LightGrey, fontSize = 9.sp)
+                                }
+                            }
+                        }
+                        
+                        // Board
+                        Box(modifier = Modifier.weight(1f).aspectRatio(1f).background(Color(0xFF2B1A10)).padding(3.dp)) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                for (rank in 7 downTo 0) {
+                                    Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                                        for (file in 0..7) {
+                                            val sq = Square(file, rank)
+                                            val piece = replayBoard[sq]
+                                            val isDark = (file + rank) % 2 == 1
+                                            val squareColor = if (isDark) Color(0xFF8D6E63) else Color(0xFFF5F5F5)
+                                            
+                                            // Highlight last move source and destination
+                                            val isFrom = lastMove?.from == sq
+                                            val isTo = lastMove?.to == sq
+                                            val highlight = when {
+                                                isFrom -> Color(0x88FFD700)  // Gold for source
+                                                isTo -> Color(0x88FF6B6B)    // Red for destination
+                                                else -> Color.Transparent
+                                            }
+                                            
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .fillMaxHeight()
+                                                    .background(squareColor)
+                                                    .border(
+                                                        width = if (isFrom || isTo) 2.dp else 0.dp,
+                                                        color = when {
+                                                            isFrom -> Color(0xFFFFD700)
+                                                            isTo -> Color(0xFFFF6B6B)
+                                                            else -> Color.Transparent
+                                                        }
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                if (piece != null) {
+                                                    val symbol = when (piece.type) {
+                                                        PieceType.PAWN -> "♟"
+                                                        PieceType.KNIGHT -> "♞"
+                                                        PieceType.BISHOP -> "♝"
+                                                        PieceType.ROOK -> "♜"
+                                                        PieceType.QUEEN -> "♛"
+                                                        PieceType.KING -> "♚"
+                                                    }
+                                                    val text = if (piece.color == PieceColor.WHITE) {
+                                                        symbol.replace("♟","♙").replace("♞","♘").replace("♝","♗")
+                                                              .replace("♜","♖").replace("♛","♕").replace("♚","♔")
+                                                    } else symbol
+                                                    Text(text = text, color = Color.Black, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Right
+                        Column(
+                            modifier = Modifier.width(14.dp).fillMaxHeight(),
+                            verticalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            for (rank in 7 downTo 0) {
+                                Box(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text("${rank + 1}", color = LightGrey, fontSize = 9.sp)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Bottom file labels
+                    Row(modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp)) {
+                        for (file in 0..7) {
+                            Text(
+                                "${'a' + file}",
+                                color = LightGrey,
+                                fontSize = 9.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(Modifier.height(12.dp))
+                
+                // Controls row 1: Playback
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Button(
+                        onClick = { replayStep = (replayStep - 1).coerceAtLeast(0) },
+                        enabled = replayStep > 0,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("⏮", fontSize = 14.sp) }
+                    
+                    Button(
+                        onClick = { isPlaying = !isPlaying },
+                        enabled = replayStep < gameHistory.size,
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isPlaying) Color(0xFFFCA311) else Color(0xFF4CAF50), contentColor = Color.Black),
+                        modifier = Modifier.weight(2f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text(if (isPlaying) "⏸ Pause" else "▶ Play", fontSize = 13.sp) }
+                    
+                    Button(
+                        onClick = { if (replayStep < gameHistory.size) replayStep++ },
+                        enabled = replayStep < gameHistory.size,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF555555)),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("⏭", fontSize = 14.sp) }
+                }
+                
+                // Controls row 2: Reset / Jump to end
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Button(
+                        onClick = { replayStep = 0; isPlaying = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("⏮ Start", fontSize = 12.sp) }
+                    
+                    Button(
+                        onClick = { replayStep = gameHistory.size; isPlaying = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("End ⏭", fontSize = 12.sp) }
+                }
+                
+                // Legend
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(10.dp).background(Color(0x88FFD700)).border(2.dp, Color(0xFFFFD700)))
+                        Spacer(Modifier.width(4.dp))
+                        Text("From", color = LightGrey, fontSize = 10.sp)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(10.dp).background(Color(0x88FF6B6B)).border(2.dp, Color(0xFFFF6B6B)))
+                        Spacer(Modifier.width(4.dp))
+                        Text("To", color = LightGrey, fontSize = 10.sp)
+                    }
+                }
+            }
+        }
+    }
 }
