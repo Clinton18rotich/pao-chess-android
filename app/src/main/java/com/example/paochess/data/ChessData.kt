@@ -137,6 +137,16 @@ fun applyMove(board: Map<Square, Piece>, from: Square, to: Square): Map<Square, 
     val nb = board.toMutableMap()
     val piece = nb[from] ?: return board
     nb.remove(from)
+
+    // ═══ PROMOTION FIX: pawn reaching far rank becomes Queen ═══
+    if (piece.type == PieceType.PAWN) {
+        val promotionRank = if (piece.color == PieceColor.WHITE) 7 else 0
+        if (to.rank == promotionRank) {
+            nb[to] = Piece(PieceType.QUEEN, piece.color)
+            return nb
+        }
+    }
+
     nb[to] = piece
     return nb
 }

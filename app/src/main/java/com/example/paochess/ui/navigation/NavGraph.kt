@@ -25,12 +25,13 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Play : Screen("play", "Practice", Icons.Filled.PlayArrow)
     object Puzzles : Screen("puzzles", "Puzzles", Icons.Filled.Extension)
     object Notation : Screen("notation", "Notation", Icons.Filled.List)
+    object Replays : Screen("replays", "Replays", Icons.Filled.History)
 }
 
 @Composable
 fun ChessNavGraph() {
     val navController = rememberNavController()
-    val items = listOf(Screen.Learn, Screen.Openings, Screen.Play, Screen.Puzzles, Screen.Notation)
+    val items = listOf(Screen.Learn, Screen.Openings, Screen.Play, Screen.Puzzles, Screen.Notation, Screen.Replays)
 
     Scaffold(
         containerColor = DarkBg,
@@ -62,6 +63,7 @@ fun ChessNavGraph() {
             composable(Screen.Play.route) { PracticeScreen() }
             composable(Screen.Puzzles.route) { PuzzlesScreen() }
             composable(Screen.Notation.route) { NotationScreen() }
+            composable(Screen.Replays.route) { ReplaysScreen() }
         }
     }
 }
