@@ -47,6 +47,19 @@ fun PracticeScreen() {
     var gameStartTime by remember { mutableStateOf(System.currentTimeMillis()) }
     var gameSaved by remember { mutableStateOf(false) }
 
+    val gameOver = remember(aiBoard) {
+        isCheckmate(PieceColor.WHITE, aiBoard) || isCheckmate(PieceColor.BLACK, aiBoard) ||
+        isStalemate(PieceColor.WHITE, aiBoard) || isStalemate(PieceColor.BLACK, aiBoard)
+    }
+    val gameResult = remember(aiBoard) {
+        when {
+            isCheckmate(PieceColor.BLACK, aiBoard) -> "win"
+            isCheckmate(PieceColor.WHITE, aiBoard) -> "loss"
+            isStalemate(PieceColor.WHITE, aiBoard) || isStalemate(PieceColor.BLACK, aiBoard) -> "draw"
+            else -> null
+        }
+    }
+
     val context = LocalContext.current
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var isTtsReady by remember { mutableStateOf(false) }
@@ -108,19 +121,6 @@ fun PracticeScreen() {
         }
     }
 
-    // ═══ DETECT game end (for showing Save button) ═══
-    val gameOver = remember(aiBoard) {
-        isCheckmate(PieceColor.WHITE, aiBoard) || isCheckmate(PieceColor.BLACK, aiBoard) ||
-        isStalemate(PieceColor.WHITE, aiBoard) || isStalemate(PieceColor.BLACK, aiBoard)
-    }
-    val gameResult = remember(aiBoard) {
-        when {
-            isCheckmate(PieceColor.BLACK, aiBoard) -> "win"
-            isCheckmate(PieceColor.WHITE, aiBoard) -> "loss"
-            isStalemate(PieceColor.WHITE, aiBoard) || isStalemate(PieceColor.BLACK, aiBoard) -> "draw"
-            else -> null
-        }
-    }
 
     Column(
         modifier = Modifier.fillMaxSize().background(DarkBg)
@@ -209,8 +209,7 @@ fun PracticeScreen() {
             }
             
             Spacer(Modifier.height(16.dp))
-
-            // ═══ SAVE BUTTON — only when game is over AND not yet saved ═══
+            // ═══ SAVE BUTTON — only when game over and not yet saved ═══
             if (gameOver && gameResult != null && !gameSaved) {
                 Button(
                     onClick = {
