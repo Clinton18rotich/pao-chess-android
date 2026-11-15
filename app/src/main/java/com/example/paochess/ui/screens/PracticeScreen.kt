@@ -115,7 +115,18 @@ fun PracticeScreen() {
                     lastAiTaunt = ""
                 }
             } else {
-                gameStatus = "Checkmate or Stalemate!"
+                // AI has no moves — determine precise result
+                val aiInCheck = isInCheck(PieceColor.BLACK, aiBoard)
+                gameStatus = when {
+                    aiInCheck -> "🏆 Checkmate — you won!"
+                    else -> "🤝 Stalemate — draw"
+                }
+                if (isTtsReady) {
+                    tts?.speak(
+                        if (aiInCheck) "Checkmate. You won!" else "Stalemate. It is a draw.",
+                        TextToSpeech.QUEUE_FLUSH, null, null
+                    )
+                }
             }
             isAiThinking = false
         }
@@ -186,7 +197,25 @@ fun PracticeScreen() {
                                                 moveHistory = moveHistory + (fromSq to square)
                                                 aiSelectedSquare = null
                                                 aiLegalMoves = emptyList()
-                                                isAiThinking = true
+
+                                                // Check if YOUR move ended the game
+                                                val whiteNoMoves = allLegalMoves(PieceColor.WHITE, aiBoard).isEmpty()
+                                                val blackNoMoves = allLegalMoves(PieceColor.BLACK, aiBoard).isEmpty()
+                                                val whiteInCheck = isInCheck(PieceColor.WHITE, aiBoard)
+                                                val blackInCheck = isInCheck(PieceColor.BLACK, aiBoard)
+
+                                                if (blackNoMoves && blackInCheck) {
+                                                    gameStatus = "🏆 Checkmate — you won!"
+                                                    if (isTtsReady) tts?.speak("Checkmate. You won!", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                } else if (whiteNoMoves && whiteInCheck) {
+                                                    gameStatus = "💀 Checkmate — you lost"
+                                                    if (isTtsReady) tts?.speak("Checkmate. You lost.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                } else if (whiteNoMoves || blackNoMoves) {
+                                                    gameStatus = "🤝 Stalemate — draw"
+                                                    if (isTtsReady) tts?.speak("Stalemate. It is a draw.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                } else {
+                                                    isAiThinking = true
+                                                }
                                             } else if (piece != null && piece.color == PieceColor.WHITE) {
                                                 aiSelectedSquare = square
                                                 aiLegalMoves = getLegalMoves(square, piece, aiBoard)
@@ -281,29 +310,17 @@ fun PracticeScreen() {
                                         if (isSolved) return@clickable
                                         
                                         if (isLegal) {
-                                            if (practiceStep >= currentPuzzle.solution.size) return@clickable
-                                            val expectedMove = currentPuzzle.solution[practiceStep]
+                                            val expectedMove = currentPuzzle.solution
                                             val isWhiteMove = expectedMove.description.contains("White", ignoreCase = true)
 
                                             if (isWhiteMove && selectedSquare == expectedMove.from && square == expectedMove.to) {
                                                 puzzleBoard = applyMove(puzzleBoard, selectedSquare!!, square)
-                                                practiceStep++
-                                                
-                                                if (practiceStep >= currentPuzzle.solution.size) {
-                                                    isSolved = true
-                                                    if (isTtsReady) tts?.speak("Correct! You found the tactic.", TextToSpeech.QUEUE_FLUSH, null, null)
-                                                } else {
-                                                    val nextMove = currentPuzzle.solution[practiceStep]
-                                                    if (!nextMove.description.contains("White", ignoreCase = true)) {
-                                                        puzzleBoard = applyMove(puzzleBoard, nextMove.from, nextMove.to)
-                                                        practiceStep++
-                                                    }
-                                                    if (isTtsReady) tts?.speak("Good. Keep going.", TextToSpeech.QUEUE_FLUSH, null, null)
-                                                }
+                                                isSolved = true
+                                                if (isTtsReady) tts?.speak("Correct! ${currentPuzzle.name}", TextToSpeech.QUEUE_FLUSH, null, null)
                                             } else {
                                                 selectedSquare = null
                                                 legalMoves = emptyList()
-                                                if (isTtsReady) tts?.speak("Try again. Follow the sequence.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                if (isTtsReady) tts?.speak("Try again. Look for a forcing checkmate.", TextToSpeech.QUEUE_FLUSH, null, null)
                                             }
                                         } else if (piece != null && piece.color == PieceColor.WHITE) {
                                             selectedSquare = square
