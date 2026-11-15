@@ -211,7 +211,15 @@ fun PracticeScreen() {
                         
                         aiBoard = applyMove(aiBoard, bestMove.from, bestMove.to)
                         capturedSquareFlash = null
-                        gameStatus = "Your turn (White)"
+                        val whiteInCheck = isInCheck(PieceColor.WHITE, aiBoard)
+                        val blackInCheck = isInCheck(PieceColor.BLACK, aiBoard)
+                        val whiteHasMoves = aiBoard.entries.any { (f, p) -> p.color == PieceColor.WHITE && getLegalMoves(f, p, aiBoard).isNotEmpty() }
+                        val blackHasMoves = aiBoard.entries.any { (f, p) -> p.color == PieceColor.BLACK && getLegalMoves(f, p, aiBoard).isNotEmpty() }
+                        gameStatus = when {
+                            blackHasMoves -> "Your turn (White)"
+                            blackInCheck -> "🏆 Checkmate — you won!"
+                            else -> "🤝 Stalemate — draw"
+                        }
                         // Keep aiThinkingText visible — cleared via delayed launch below
                         launch {
                             delay(3000L)
@@ -227,7 +235,12 @@ fun PracticeScreen() {
                             lastAiTaunt = ""
                         }
                     } else {
-                        gameStatus = "Checkmate or Stalemate!"
+                        val aiInCheck = isInCheck(PieceColor.BLACK, aiBoard)
+                        gameStatus = when {
+                            aiInCheck -> "🏆 Checkmate — you won!"
+                            else -> "🤝 Stalemate — draw"
+                        }
+                        if (isTtsReady) tts?.speak(if (aiInCheck) "Checkmate. You won!" else "Stalemate. It is a draw.", TextToSpeech.QUEUE_FLUSH, null, null)
                         delay(1500L)
                         showAnalysis = true
                     }
@@ -341,7 +354,16 @@ fun PracticeScreen() {
                                                         aiBoard = applyMove(aiBoard, aiSelectedSquare!!, sq)
                                                         aiSelectedSquare = null
                                                         aiLegalMoves = emptyList()
-                                                        isAiThinking = true
+                                                        // FIX: Check if YOUR move ended the game
+                                                        val _bHasMoves = aiBoard.entries.any { (f, p) -> p.color == PieceColor.BLACK && getLegalMoves(f, p, aiBoard).isNotEmpty() }
+                                                        if (!_bHasMoves) {
+                                                            val _bInCheck = isInCheck(PieceColor.BLACK, aiBoard)
+                                                            gameStatus = if (_bInCheck) "🏆 Checkmate — you won!" else "🤝 Stalemate — draw"
+                                                            if (isTtsReady) tts?.speak(if (_bInCheck) "Checkmate. You won!" else "Stalemate. It is a draw.", TextToSpeech.QUEUE_FLUSH, null, null)
+                                                            isAiThinking = false
+                                                        } else {
+                                                            isAiThinking = true
+                                                        }
                                                     } else if (piece != null && piece.color == PieceColor.WHITE) {
                                                         aiSelectedSquare = sq
                                                         aiLegalMoves = getLegalMoves(sq, piece, aiBoard)

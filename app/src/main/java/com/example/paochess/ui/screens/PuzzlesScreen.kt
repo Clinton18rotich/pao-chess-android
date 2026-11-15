@@ -241,7 +241,7 @@ fun PuzzlesScreen() {
                 onClick = { puzzleMode = "CLASSIC" },
                 colors = ButtonDefaults.buttonColors(containerColor = if (puzzleMode == "CLASSIC") Orange else DarkSurface, contentColor = if (puzzleMode == "CLASSIC") Color.Black else White),
                 modifier = Modifier.weight(1f)
-            ) { Text("Classic 18") }
+            ) { Text("Classic 8") }
             
             Button(
                 onClick = { puzzleMode = "FEN" },
