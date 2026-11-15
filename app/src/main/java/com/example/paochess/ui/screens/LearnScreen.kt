@@ -32,16 +32,16 @@ fun LearnScreen() {
     var selectedTab by remember { mutableStateOf(0) }
 
     val explanations = listOf(
-        "The Pawn moves forward 1 square. On its very first move it may advance 2 squares. It captures diagonally. If it reaches the far rank, it promotes.",
-        "The Knight moves in an 'L' shape: two squares in one direction, then one square perpendicular. It is the only piece that can jump over others.",
-        "The Bishop moves diagonally any number of squares. It stays on the same color square for the whole game.",
-        "The Rook moves in straight lines (horizontal or vertical) any number of squares. It is very powerful on open files.",
-        "The Queen is the most powerful piece. She moves in straight lines or diagonally, any number of squares.",
-        "The King moves 1 square in any direction. You cannot move the King into check.",
-        "How the game ends: You win by Checkmate (trapping the King). The game is a Draw if it's a Stalemate (no legal moves but not in check), or if there is insufficient material to mate, or a 50-move rule.",
-        "Castling: The King moves two squares toward a Rook, and that Rook jumps to the other side. There are TWO types: King-side (O-O) uses the h-file Rook, Queen-side (O-O-O) uses the a-file Rook. Both keep your King safe!",
-        "En Passant: If an enemy Pawn moves two squares and lands next to your Pawn, you can capture it as if it had only moved one square.",
-        "Capture: To capture a piece, you move your piece onto the square occupied by the enemy piece. Watch how every piece captures: Pawn, Knight, Bishop, Rook, Queen, and King."
+        "PAWN: Moves forward 1 square (or 2 on its first move). Captures diagonally. Notation: e4 (move to e4), exd5 (captures on d5), e8=Q (promotes to Queen).",
+        "KNIGHT: Moves in an L-shape (2 squares one way, 1 square perpendicular). The only piece that can jump over others. Notation: Nf3 (to f3), Nxf3 (captures on f3), Nbd2 (from b-file to d2).",
+        "BISHOP: Moves diagonally any number of squares. Stays on the same color square its whole life. Notation: Bc4 (to c4), Bxc4 (captures on c4).",
+        "ROOK: Moves horizontally or vertically any number of squares. Very powerful on open files. Notation: Ra1 (to a1), Rxa1 (captures on a1), O-O (castles king-side).",
+        "QUEEN: The most powerful piece. Moves horizontally, vertically, or diagonally. Notation: Qd1 (to d1), Qxd1 (captures on d1).",
+        "KING: Moves 1 square in any direction. Cannot move into check. Notation: Ke2 (to e2), Kxe2 (captures on e2), O-O-O (castles queen-side).",
+        "GAME OVER: Win by Checkmate (King is attacked and has no escape). Draw by Stalemate (no legal moves but NOT in check). Notation: # (Checkmate), + (Check).",
+        "CASTLING: The King moves 2 squares toward a Rook, and the Rook jumps to the other side. Notation: O-O (King-side), O-O-O (Queen-side).",
+        "EN PASSANT: If an enemy pawn moves 2 squares and lands beside your pawn, you can capture it as if it moved 1 square. Notation: exd6 e.p.",
+        "CAPTURE: To capture, move your piece onto the enemy piece's square. Watch how every piece captures: Pawn, Knight, Bishop, Rook, Queen, and King.",
     )
 
     val icons = listOf("♙", "♘", "♗", "♖", "♕", "♔", "🏁", "🏰", "👻", "⚔️")
