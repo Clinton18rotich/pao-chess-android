@@ -161,6 +161,19 @@ fun getLegalMoves(from: Square, piece: Piece, board: Map<Square, Piece>): List<S
 
 // ---------- Checkmate / stalemate ----------
 
+// ═══ Public helper: get all legal moves for a color ═══
+fun allLegalMoves(color: PieceColor, board: Map<Square, Piece>): List<Pair<Square, Square>> {
+    val moves = mutableListOf<Pair<Square, Square>>()
+    for ((from, piece) in board) {
+        if (piece.color == color) {
+            for (to in getLegalMoves(from, piece, board)) {
+                moves.add(Pair(from, to))
+            }
+        }
+    }
+    return moves
+}
+
 fun isCheckmate(color: PieceColor, board: Map<Square, Piece>): Boolean {
     if (!isInCheck(color, board)) return false
     // Try every legal move for `color`
