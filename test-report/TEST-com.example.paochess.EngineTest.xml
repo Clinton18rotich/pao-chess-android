@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.paochess.EngineTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-15T18:22:33" hostname="runnervm8axu0" time="0.03">
+  <properties/>
+  <testcase name="back rank mate is real" classname="com.example.paochess.EngineTest" time="0.026"/>
+  <testcase name="start position sanity" classname="com.example.paochess.EngineTest" time="0.001"/>
+  <testcase name="pawns cannot capture onto empty squares" classname="com.example.paochess.EngineTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

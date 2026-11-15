@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.paochess.MateFinderTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-15T18:22:34" hostname="runnervm8axu0" time="0.082">
+  <properties/>
+  <testcase name="dump all mate-in-1 moves per puzzle board" classname="com.example.paochess.MateFinderTest" time="0.082"/>
+  <system-out><![CDATA[=== MATE FINDER START ===
+=== #1 Smothered Mate ===
+  MATE: g5 -> f7 (KNIGHT)
+  Currently claims: g5 -> f7
+=== #2 Anastasia's Mate ===
+  MATE: g8 -> f8 (ROOK)
+  MATE: g8 -> e8 (ROOK)
+  MATE: g8 -> d8 (ROOK)
+  MATE: g8 -> c8 (ROOK)
+  MATE: g8 -> b8 (ROOK)
+  MATE: g8 -> a8 (ROOK)
+  Currently claims: g8 -> a8
+=== #3 Legal's Mate ===
+  MATE: d6 -> e7 (QUEEN)
+  MATE: d6 -> d8 (QUEEN)
+  Currently claims: d6 -> e7
+=== #4 Bishop & Knight ===
+  MATE: e5 -> f7 (KNIGHT)
+  Currently claims: e5 -> f7
+=== #5 The Windmill ===
+  MATE: e5 -> g6 (KNIGHT)
+  Currently claims: e5 -> g6
+=== #6 Arabian Mate ===
+  MATE: h1 -> h7 (ROOK)
+  Currently claims: h1 -> h7
+=== #7 Back Rank Mate ===
+  MATE: a1 -> a8 (ROOK)
+  Currently claims: a1 -> a8
+=== #8 Fool's Mate ===
+  NO MATE-IN-1 AVAILABLE — redesign board
+  Currently claims: d8 -> h4
+=== MATE FINDER END ===
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
