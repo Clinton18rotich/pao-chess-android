@@ -97,3 +97,5 @@ fun PieceView(piece: Piece) {
     val color = if (piece.color == PieceColor.WHITE) Color(0xFF000000) else Color(0xFF000000)
     Text(text = text, color = color, fontSize = 28.sp, fontWeight = FontWeight.Bold)
 }
+
+

@@ -97,28 +97,6 @@ fun getPseudoLegalMoves(from: Square, piece: Piece, board: Map<Square, Piece>): 
         PieceType.KING -> {
             val dirs = listOf(-1 to -1, -1 to 1, 1 to -1, 1 to 1, -1 to 0, 1 to 0, 0 to -1, 0 to 1)
             dirs.forEach { (df, dr) -> if (canLand(file + df, rank + dr)) moves.add(Square(file + df, rank + dr)) }
-
-            // ═══ CASTLING — both types, both colors ═══
-            val homeRank = if (piece.color == PieceColor.WHITE) 0 else 7
-            if (file == 4 && rank == homeRank) {
-                // KING-SIDE (O-O): rook at h1/h8 = file 7
-                val rookK = board[Square(7, homeRank)]
-                if (rookK != null && rookK.type == PieceType.ROOK && rookK.color == piece.color
-                    && board[Square(5, homeRank)] == null
-                    && board[Square(6, homeRank)] == null
-                ) {
-                    moves.add(Square(6, homeRank))
-                }
-                // QUEEN-SIDE (O-O-O): rook at a1/a8 = file 0
-                val rookQ = board[Square(0, homeRank)]
-                if (rookQ != null && rookQ.type == PieceType.ROOK && rookQ.color == piece.color
-                    && board[Square(1, homeRank)] == null
-                    && board[Square(2, homeRank)] == null
-                    && board[Square(3, homeRank)] == null
-                ) {
-                    moves.add(Square(2, homeRank))
-                }
-            }
         }
     }
     return moves
@@ -159,39 +137,7 @@ fun applyMove(board: Map<Square, Piece>, from: Square, to: Square): Map<Square, 
     val nb = board.toMutableMap()
     val piece = nb[from] ?: return board
     nb.remove(from)
-
-    // ═══ PROMOTION FIX: pawn reaching far rank becomes Queen ═══
-    if (piece.type == PieceType.PAWN) {
-        val promotionRank = if (piece.color == PieceColor.WHITE) 7 else 0
-        if (to.rank == promotionRank) {
-            nb[to] = Piece(PieceType.QUEEN, piece.color)
-            return nb
-        }
-    }
-
     nb[to] = piece
-
-    // ═══ CASTLING: move the rook too ═══
-    if (piece.type == PieceType.KING) {
-        val homeRank = if (piece.color == PieceColor.WHITE) 0 else 7
-        // King-side: e→g, rook h→f
-        if (from.file == 4 && from.rank == homeRank && to.file == 6 && to.rank == homeRank) {
-            val rook = nb[Square(7, homeRank)]
-            if (rook != null && rook.type == PieceType.ROOK && rook.color == piece.color) {
-                nb.remove(Square(7, homeRank))
-                nb[Square(5, homeRank)] = rook
-            }
-        }
-        // Queen-side: e→c, rook a→d
-        if (from.file == 4 && from.rank == homeRank && to.file == 2 && to.rank == homeRank) {
-            val rook = nb[Square(0, homeRank)]
-            if (rook != null && rook.type == PieceType.ROOK && rook.color == piece.color) {
-                nb.remove(Square(0, homeRank))
-                nb[Square(3, homeRank)] = rook
-            }
-        }
-    }
-
     return nb
 }
 
@@ -204,19 +150,6 @@ fun getLegalMoves(from: Square, piece: Piece, board: Map<Square, Piece>): List<S
 }
 
 // ---------- Checkmate / stalemate ----------
-
-// ═══ Public helper: get all legal moves for a color ═══
-fun allLegalMoves(color: PieceColor, board: Map<Square, Piece>): List<Pair<Square, Square>> {
-    val moves = mutableListOf<Pair<Square, Square>>()
-    for ((from, piece) in board) {
-        if (piece.color == color) {
-            for (to in getLegalMoves(from, piece, board)) {
-                moves.add(Pair(from, to))
-            }
-        }
-    }
-    return moves
-}
 
 fun isCheckmate(color: PieceColor, board: Map<Square, Piece>): Boolean {
     if (!isInCheck(color, board)) return false
@@ -236,3 +169,5 @@ fun isStalemate(color: PieceColor, board: Map<Square, Piece>): Boolean {
     }
     return true
 }
+
+

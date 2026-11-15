@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -25,24 +26,24 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Play : Screen("play", "Practice", Icons.Filled.PlayArrow)
     object Puzzles : Screen("puzzles", "Puzzles", Icons.Filled.Extension)
     object Notation : Screen("notation", "Notation", Icons.Filled.List)
-    object Replays : Screen("replays", "Replays", Icons.Filled.History)
+    object Games : Screen("games", "Games", Icons.Filled.Movie)
 }
 
 @Composable
 fun ChessNavGraph() {
     val navController = rememberNavController()
-    val items = listOf(Screen.Learn, Screen.Openings, Screen.Play, Screen.Puzzles, Screen.Notation, Screen.Replays)
+    val items = listOf(Screen.Learn, Screen.Openings, Screen.Puzzles, Screen.Play, Screen.Games, Screen.Notation)
 
     Scaffold(
         containerColor = DarkBg,
         bottomBar = {
-            NavigationBar(containerColor = DarkSurface) {
+            NavigationBar(containerColor = DarkSurface, modifier = Modifier.height(56.dp)) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 items.forEach { screen ->
                     NavigationBarItem(
-                        icon = { Icon(screen.icon, contentDescription = screen.label, tint = if (currentRoute == screen.route) Orange else LightGrey) },
-                        label = { Text(screen.label, fontSize = 10.sp, color = if (currentRoute == screen.route) Orange else LightGrey) },
+                        icon = { Icon(screen.icon, contentDescription = screen.label, tint = if (currentRoute == screen.route) Orange else LightGrey, modifier = Modifier.size(20.dp)) },
+                        label = { Text(screen.label, fontSize = 8.sp, color = if (currentRoute == screen.route) Orange else LightGrey, maxLines = 1) },
                         selected = currentRoute == screen.route,
                         onClick = {
                             navController.navigate(screen.route) {
@@ -63,7 +64,7 @@ fun ChessNavGraph() {
             composable(Screen.Play.route) { PracticeScreen() }
             composable(Screen.Puzzles.route) { PuzzlesScreen() }
             composable(Screen.Notation.route) { NotationScreen() }
-            composable(Screen.Replays.route) { ReplaysScreen() }
+            composable(Screen.Games.route) { GameViewerScreen() }
         }
     }
 }
@@ -74,3 +75,5 @@ fun PlaceholderScreen(text: String) {
         Text(text, color = LightGrey, fontSize = 18.sp)
     }
 }
+
+
