@@ -41,7 +41,7 @@ fun LearnScreen() {
         "How the game ends: You win by Checkmate (trapping the King). The game is a Draw if it's a Stalemate (no legal moves but not in check), or if there is insufficient material to mate, or a 50-move rule.",
         "Castling: The King moves two squares toward a Rook, and that Rook jumps to the other side. There are TWO types: King-side (O-O) uses the h-file Rook, Queen-side (O-O-O) uses the a-file Rook. Both keep your King safe!",
         "En Passant: If an enemy Pawn moves two squares and lands next to your Pawn, you can capture it as if it had only moved one square.",
-        "Capture: To capture a piece, you move your piece onto the square occupied by the enemy piece. Watch the Knight capture the Pawn."
+        "Capture: To capture a piece, you move your piece onto the square occupied by the enemy piece. Watch how every piece captures: Pawn, Knight, Bishop, Rook, Queen, and King."
     )
 
     val icons = listOf("♙", "♘", "♗", "♖", "♕", "♔", "🏁", "🏰", "👻", "⚔️")
