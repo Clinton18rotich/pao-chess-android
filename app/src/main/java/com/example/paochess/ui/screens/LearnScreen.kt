@@ -87,16 +87,22 @@ fun LearnScreen() {
                 currentBoard = b
                 if (isTtsReady) tts?.speak(explanations[selectedTab], TextToSpeech.QUEUE_FLUSH, null, null)
             }
-            selectedTab == 7 -> { // Castling
-                currentBoard = mapOf(
-                    Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), 
-                    Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), 
-                )
-                if (isTtsReady) tts?.speak("White castles kingside. The King moves two squares, and the Rook jumps over.", TextToSpeech.QUEUE_FLUSH, null, null)
+            selectedTab == 7 -> { // Castling — BOTH types
+                currentBoard = mapOf(Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(7, 0) to Piece(PieceType.ROOK, PieceColor.WHITE))
+                specialStep = 0
+                if (isTtsReady) tts?.speak("King-side castling, O-O. King moves two squares to g1, Rook jumps to f1.", TextToSpeech.QUEUE_FLUSH, null, null)
                 delay(2500L)
-                specialStep = 1 
+                specialStep = 1
                 delay(1500L)
-                specialStep = 2 
+                specialStep = 2
+                delay(2000L)
+                currentBoard = mapOf(Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE))
+                specialStep = 3
+                if (isTtsReady) tts?.speak("Now queen-side castling, O-O-O. King moves two squares to c1, Rook jumps to d1.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2500L)
+                specialStep = 4
+                delay(1500L)
+                specialStep = 5
             }
             selectedTab == 8 -> { // En Passant
                 currentBoard = mapOf(
@@ -107,14 +113,42 @@ fun LearnScreen() {
                 delay(2500L)
                 specialStep = 1 
             }
-            selectedTab == 9 -> { // Capture Practice
-                currentBoard = mapOf(
-                    Square(4, 3) to Piece(PieceType.KNIGHT, PieceColor.WHITE), 
-                    Square(6, 5) to Piece(PieceType.PAWN, PieceColor.BLACK),   
-                )
-                if (isTtsReady) tts?.speak("To capture, move your piece onto the enemy piece. Watch the Knight capture the Pawn.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2500L)
+            selectedTab == 9 -> { // Capture — ALL pieces
+                currentBoard = mapOf(Square(3, 3) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK))
+                specialStep = 0
+                if (isTtsReady) tts?.speak("Pawn captures diagonally. Pawn on d4 captures pawn on e5.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2000L)
                 specialStep = 1
+                delay(2000L)
+                currentBoard = mapOf(Square(2, 2) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(4, 3) to Piece(PieceType.PAWN, PieceColor.BLACK))
+                specialStep = 2
+                if (isTtsReady) tts?.speak("Knight captures in an L-shape. Knight on c3 captures pawn on e4.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2000L)
+                specialStep = 3
+                delay(2000L)
+                currentBoard = mapOf(Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(7, 5) to Piece(PieceType.PAWN, PieceColor.BLACK))
+                specialStep = 4
+                if (isTtsReady) tts?.speak("Bishop captures along diagonal. Bishop on c1 captures pawn on h6.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2000L)
+                specialStep = 5
+                delay(2000L)
+                currentBoard = mapOf(Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 5) to Piece(PieceType.PAWN, PieceColor.BLACK))
+                specialStep = 6
+                if (isTtsReady) tts?.speak("Rook captures in a straight line. Rook on a1 captures pawn on a6.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2000L)
+                specialStep = 7
+                delay(2000L)
+                currentBoard = mapOf(Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE), Square(3, 5) to Piece(PieceType.PAWN, PieceColor.BLACK))
+                specialStep = 8
+                if (isTtsReady) tts?.speak("Queen captures any direction. Queen on d1 captures pawn on d6.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2000L)
+                specialStep = 9
+                delay(2000L)
+                currentBoard = mapOf(Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(4, 1) to Piece(PieceType.PAWN, PieceColor.BLACK))
+                specialStep = 10
+                if (isTtsReady) tts?.speak("King captures one square in any direction. King on e1 captures pawn on e2.", TextToSpeech.QUEUE_FLUSH, null, null)
+                delay(2000L)
+                specialStep = 11
             }
         }
     }
@@ -168,20 +202,28 @@ fun LearnScreen() {
                                 val square = Square(file, rank)
                                 
                                 var displayPiece = currentBoard[square]
-                                if (selectedTab == 7) { // Castling
-                                    if (specialStep >= 1 && square == Square(6, 0)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE)
-                                    if (specialStep >= 1 && square == Square(4, 0)) displayPiece = null
-                                    if (specialStep >= 2 && square == Square(5, 0)) displayPiece = Piece(PieceType.ROOK, PieceColor.WHITE)
-                                    if (specialStep >= 2 && square == Square(7, 0)) displayPiece = null
+                                if (selectedTab == 7) { // Castling — BOTH
+                                    if (specialStep in 1..2 && square == Square(6, 0)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE)
+                                    if (specialStep in 1..2 && square == Square(4, 0)) displayPiece = null
+                                    if (specialStep in 2..2 && square == Square(5, 0)) displayPiece = Piece(PieceType.ROOK, PieceColor.WHITE)
+                                    if (specialStep in 2..2 && square == Square(7, 0)) displayPiece = null
+                                    if (specialStep in 4..5 && square == Square(2, 0)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE)
+                                    if (specialStep in 4..5 && square == Square(4, 0)) displayPiece = null
+                                    if (specialStep in 5..5 && square == Square(3, 0)) displayPiece = Piece(PieceType.ROOK, PieceColor.WHITE)
+                                    if (specialStep in 5..5 && square == Square(0, 0)) displayPiece = null
                                 }
                                 if (selectedTab == 8) { // En Passant
                                     if (specialStep >= 1 && square == Square(3, 5)) displayPiece = Piece(PieceType.PAWN, PieceColor.WHITE)
                                     if (specialStep >= 1 && square == Square(4, 4)) displayPiece = null
                                     if (specialStep >= 1 && square == Square(3, 4)) displayPiece = null
                                 }
-                                if (selectedTab == 9) { // Capture
-                                    if (specialStep >= 1 && square == Square(6, 5)) displayPiece = Piece(PieceType.KNIGHT, PieceColor.WHITE)
-                                    if (specialStep >= 1 && square == Square(4, 3)) displayPiece = null
+                                if (selectedTab == 9) { // Capture — ALL
+                                    if (specialStep == 1) { if (square == Square(4, 4)) displayPiece = Piece(PieceType.PAWN, PieceColor.WHITE); if (square == Square(3, 3)) displayPiece = null }
+                                    if (specialStep == 3) { if (square == Square(4, 3)) displayPiece = Piece(PieceType.KNIGHT, PieceColor.WHITE); if (square == Square(2, 2)) displayPiece = null }
+                                    if (specialStep == 5) { if (square == Square(7, 5)) displayPiece = Piece(PieceType.BISHOP, PieceColor.WHITE); if (square == Square(2, 0)) displayPiece = null }
+                                    if (specialStep == 7) { if (square == Square(0, 5)) displayPiece = Piece(PieceType.ROOK, PieceColor.WHITE); if (square == Square(0, 0)) displayPiece = null }
+                                    if (specialStep == 9) { if (square == Square(3, 5)) displayPiece = Piece(PieceType.QUEEN, PieceColor.WHITE); if (square == Square(3, 0)) displayPiece = null }
+                                    if (specialStep == 11) { if (square == Square(4, 1)) displayPiece = Piece(PieceType.KING, PieceColor.WHITE); if (square == Square(4, 0)) displayPiece = null }
                                 }
 
                                 val isDark = (file + rank) % 2 == 1

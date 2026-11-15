@@ -35,6 +35,29 @@ data class RecordedMove(
     val capturedPiece: PieceType?
 )
 
+fun serializeMoves(moves: List<RecordedMove>): String {
+    val arr = org.json.JSONArray()
+    moves.forEach { m ->
+        val o = org.json.JSONObject()
+        o.put("n", m.moveNumber); o.put("c", m.color.name)
+        o.put("ff", m.from.file); o.put("fr", m.from.rank)
+        o.put("tf", m.to.file); o.put("tr", m.to.rank)
+        o.put("p", m.piece.name); o.put("cap", m.capturedPiece?.name ?: "")
+        arr.put(o)
+    }
+    return arr.toString()
+}
+
+fun deserializeMoves(json: String): List<RecordedMove> {
+    return try {
+        val arr = org.json.JSONArray(json)
+        (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            RecordedMove(o.getInt("n"), PieceColor.valueOf(o.getString("c")), Square(o.getInt("ff"), o.getInt("fr")), Square(o.getInt("tf"), o.getInt("tr")), PieceType.valueOf(o.getString("p")), o.getString("cap").takeIf { it.isNotEmpty() }?.let { PieceType.valueOf(it) })
+        }
+    } catch (e: Exception) { emptyList() }
+}
+
 @Composable
 fun PracticeScreen() {
     var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
@@ -138,6 +161,7 @@ fun PracticeScreen() {
             val gameHistory = remember { mutableStateListOf<RecordedMove>() }
             var showAnalysis by remember { mutableStateOf(false) }
             var showReplay by remember { mutableStateOf(false) }
+            var showSavedReplays by remember { mutableStateOf(false) }
             var moveCounter by remember { mutableStateOf(1) }
             
             // Reset voice to coach pitch when entering AI mode initially
@@ -419,6 +443,25 @@ fun PracticeScreen() {
                     modifier = Modifier.weight(1f)
                 ) { Text("▶ Replay") }
             }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        ReplayStore.save(context, System.currentTimeMillis().toString(), gameStatus, serializeMoves(gameHistory.toList()))
+                        speak("Replay saved!")
+                    },
+                    enabled = gameHistory.isNotEmpty(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3), contentColor = Color.White),
+                    modifier = Modifier.weight(1f)
+                ) { Text("💾 Save") }
+                Button(
+                    onClick = { showSavedReplays = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C27B0), contentColor = Color.White),
+                    modifier = Modifier.weight(1f)
+                ) { Text("📁 Saved") }
+            }
             
             // Replay Modal
             if (showReplay) {
@@ -426,6 +469,9 @@ fun PracticeScreen() {
                     gameHistory = gameHistory,
                     onDismiss = { showReplay = false }
                 )
+            }
+            if (showSavedReplays) {
+                SavedReplaysDialog(context = context, onDismiss = { showSavedReplays = false })
             }
             
             // Analysis Modal
@@ -1102,4 +1148,40 @@ fun GameReplayDialog(
     }
 }
 
+@Composable
+fun SavedReplaysDialog(context: android.content.Context, onDismiss: () -> Unit) {
+    var replays by remember { mutableStateOf(ReplayStore.load(context)) }
+    var viewingMoves by remember { mutableStateOf<List<RecordedMove>?>(null) }
 
+    if (viewingMoves != null) {
+        GameReplayDialog(gameHistory = viewingMoves!!, onDismiss = { viewingMoves = null })
+        return
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(modifier = Modifier.fillMaxWidth().padding(8.dp), colors = CardDefaults.cardColors(containerColor = DarkSurface)) {
+            Column(modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState())) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("📁 Saved Replays (${replays.size})", color = Orange, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) { Text("✕", color = White, fontSize = 20.sp) }
+                }
+                Spacer(Modifier.height(12.dp))
+                if (replays.isEmpty()) {
+                    Text("No saved replays yet.\nPlay a game and tap 💾 Save.", color = LightGrey, fontSize = 14.sp)
+                } else {
+                    replays.forEach { r ->
+                        Card(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A))) {
+                            Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f).clickable { viewingMoves = deserializeMoves(r.movesJson) }) {
+                                    Text(r.result.ifEmpty { "Game" }, color = White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                    Text(java.text.SimpleDateFormat("MMM dd, HH:mm", java.util.Locale.getDefault()).format(java.util.Date(r.date)), color = LightGrey, fontSize = 11.sp)
+                                }
+                                IconButton(onClick = { ReplayStore.delete(context, r.id); replays = ReplayStore.load(context) }) { Text("🗑", fontSize = 16.sp) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
