@@ -48,31 +48,31 @@ val FEN_PUZZLES = listOf(
         "White to move. Force the King to move and win the Queen.",
         FenParser.parseFen("4k3/4q3/8/8/8/8/8/4R1K1 w - - 0 1"),
         listOf(
-            MoveStep("If White moves the Rook to e7, it checks the King on e8.", Square(4, 0), Square(4, 6)),
-            MoveStep("Then Black is forced to move the King, exposing the Queen behind it.", Square(4, 7), Square(3, 7)),
-            MoveStep("But White will capture the Queen with Rxe7. That is a Skewer!", Square(4, 6), Square(4, 6))
+            MoveStep("If White moves the Rook to e7, it captures the Queen and checks the King.", Square(4, 0), Square(4, 6)),
+            MoveStep("The King is forced to move to d8.", Square(4, 7), Square(3, 7)),
+            MoveStep("White has won the Queen. That is a Skewer!", Square(4, 6), Square(4, 6))
         ),
         "Check the King to win the Queen."
     ),
     MultiMovePuzzle(
         "The Pin",
         "White to move. Trap the Knight against the King.",
-        FenParser.parseFen("4k3/3n4/8/8/8/8/8/4R1K1 w - - 0 1"),
+        FenParser.parseFen("4k3/4n3/8/8/8/8/8/4R1K1 w - - 0 1"),
         listOf(
-            MoveStep("If White moves the Rook to e7, it pins the Knight to the King.", Square(4, 0), Square(4, 6)),
-            MoveStep("Since the Knight cannot move without exposing the King, it is trapped.", Square(4, 6), Square(4, 6)),
-            MoveStep("And White will capture it with Rxd7. That is an Absolute Pin!", Square(4, 6), Square(3, 6))
+            MoveStep("If White moves the Rook to e2, it pins the Knight to the King.", Square(4, 0), Square(4, 1)),
+            MoveStep("The Knight cannot move without exposing the King.", Square(4, 6), Square(4, 6)),
+            MoveStep("White can capture the Knight next. That is an Absolute Pin!", Square(4, 1), Square(4, 6))
         ),
         "Pin the Knight."
     ),
     MultiMovePuzzle(
         "The Fork",
         "White to move. Attack two pieces at once.",
-        FenParser.parseFen("4k3/8/8/4N3/8/8/8/4R1K1 w - - 0 1"),
+        FenParser.parseFen("4k2r/8/8/4N3/8/8/8/4R1K1 w - - 0 1"),
         listOf(
-            MoveStep("If White moves the Knight to f6, it checks the King.", Square(4, 4), Square(5, 5)),
-            MoveStep("Then Black will be forced to move the King.", Square(4, 7), Square(3, 7)),
-            MoveStep("And White will capture the Rook on the next move. That is a Royal Fork!", Square(5, 5), Square(5, 5))
+            MoveStep("If White moves the Knight to f7, it checks the King and attacks the Rook.", Square(4, 4), Square(5, 6)),
+            MoveStep("The King is forced to move away.", Square(4, 7), Square(3, 7)),
+            MoveStep("And White will capture the Rook on h8 next. That is a Royal Fork!", Square(5, 6), Square(7, 7))
         ),
         "Fork the King and Rook."
     ),
@@ -81,9 +81,9 @@ val FEN_PUZZLES = listOf(
         "White to move. Reveal an attack on the Queen.",
         FenParser.parseFen("3qk3/8/8/4N3/8/8/8/4R1K1 w - - 0 1"),
         listOf(
-            MoveStep("If White moves the Knight to f7, it attacks the Queen and reveals the Rook's attack on the King.", Square(4, 4), Square(5, 5)),
+            MoveStep("If White moves the Knight to c6, it attacks the Queen and reveals the Rook's check.", Square(4, 4), Square(2, 5)),
             MoveStep("Then Black will move the King to escape the check.", Square(4, 7), Square(3, 7)),
-            MoveStep("But White will capture the Queen with Nxd8. That is a Discovered Attack!", Square(5, 5), Square(3, 7))
+            MoveStep("But White will capture the Queen next. That is a Discovered Attack!", Square(2, 5), Square(3, 7))
         ),
         "Reveal the Rook's attack."
     ),
@@ -103,7 +103,7 @@ val FEN_PUZZLES = listOf(
         "White to move. Sacrifice the Bishop to open the King.",
         FenParser.parseFen("rnbq1rk1/pp2bppp/4pn2/2pp4/3P4/2NBP3/PP3PPP/R1BQK1NR w KQ - 0 1"),
         listOf(
-            MoveStep("If White moves the Bishop to h7, it checks the King and sacrifices itself.", Square(3, 3), Square(7, 6)),
+            MoveStep("If White moves the Bishop to h7, it checks the King and sacrifices itself.", Square(3, 2), Square(7, 6)),
             MoveStep("Then Black will capture the Bishop.", Square(6, 7), Square(7, 6)),
             MoveStep("But White will bring the Queen to h5 for a devastating attack. This is the Greek Gift Sacrifice!", Square(3, 0), Square(7, 4))
         ),
