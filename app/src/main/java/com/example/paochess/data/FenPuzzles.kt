@@ -44,26 +44,6 @@ val FEN_PUZZLES = listOf(
         "Push the Rook to the 8th rank."
     ),
     MultiMovePuzzle(
-        "Rook Skewer",
-        "White to move. Attack the King and Queen.",
-        FenParser.parseFen("4k3/4r3/8/8/8/8/8/4R1K1 w - - 0 1"),
-        listOf(
-            MoveStep("If White moves the Rook to e7, it attacks the Black Rook.", Square(4, 0), Square(4, 6)),
-            MoveStep("Then Black will capture the White Rook, but White will take back with the King.", Square(4, 6), Square(4, 6))
-        ),
-        "Attack the Rook."
-    ),
-    MultiMovePuzzle(
-        "Queen Fork",
-        "White to move. Attack two pieces at once.",
-        FenParser.parseFen("7k/8/8/8/8/8/6q1/K6Q w - - 0 1"),
-        listOf(
-            MoveStep("If White moves the Queen to a8, it checks the King.", Square(7, 0), Square(0, 7)),
-            MoveStep("Then Black will be forced to move the King, and White will capture the Queen.", Square(7, 7), Square(6, 7))
-        ),
-        "Check the King."
-    ),
-    MultiMovePuzzle(
         "The Skewer",
         "White to move. Force the King to move and win the Queen.",
         FenParser.parseFen("4k3/4q3/8/8/8/8/8/4R1K1 w - - 0 1"),
@@ -141,5 +121,3 @@ val FEN_PUZZLES = listOf(
         "Check the King."
     )
 )
-
-
