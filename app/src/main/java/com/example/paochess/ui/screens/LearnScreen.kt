@@ -32,12 +32,12 @@ fun LearnScreen() {
     var selectedTab by remember { mutableStateOf(0) }
 
     val explanations = listOf(
-        "PAWN: Moves forward 1 square (or 2 on its first move). Captures diagonally. Notation: e4 (move to e4), exd5 (captures on d5), e8=Q (promotes to Queen).",
-        "KNIGHT: Moves in an L-shape (2 squares one way, 1 square perpendicular). The only piece that can jump over others. Notation: Nf3 (to f3), Nxf3 (captures on f3), Nbd2 (from b-file to d2).",
-        "BISHOP: Moves diagonally any number of squares. Stays on the same color square its whole life. Notation: Bc4 (to c4), Bxc4 (captures on c4).",
-        "ROOK: Moves horizontally or vertically any number of squares. Very powerful on open files. Notation: Ra1 (to a1), Rxa1 (captures on a1), O-O (castles king-side).",
-        "QUEEN: The most powerful piece. Moves horizontally, vertically, or diagonally. Notation: Qd1 (to d1), Qxd1 (captures on d1).",
-        "KING: Moves 1 square in any direction. Cannot move into check. Notation: Ke2 (to e2), Kxe2 (captures on e2), O-O-O (castles queen-side).",
+        "PAWN: Moves forward 1 (or 2 on first move). Captures diagonally. Move to e8 to promote! Notation: e4, exd5, e8=Q.",
+        "KNIGHT: Moves in an L-shape and jumps over pieces. You can capture the enemy Pawn. Notation: Nf3, Nxf3.",
+        "BISHOP: Moves diagonally any number of squares. You can capture the enemy Pawn. Notation: Bc4, Bxc4.",
+        "ROOK: Moves horizontally or vertically. You can capture the enemy Pawn. Notation: Ra1, Rxa1.",
+        "QUEEN: Moves any direction. You can capture the enemy Pawn. Notation: Qd1, Qxd1.",
+        "KING: Moves 1 square in any direction. You can capture the enemy Pawn. Notation: Ke2, Kxe2.",
         "GAME OVER: Win by Checkmate (King is attacked and has no escape). Draw by Stalemate (no legal moves but NOT in check). Notation: # (Checkmate), + (Check).",
         "CASTLING: The King moves 2 squares toward a Rook, and the Rook jumps to the other side. Notation: O-O (King-side), O-O-O (Queen-side).",
         "EN PASSANT: If an enemy pawn moves 2 squares and lands beside your pawn, you can capture it as if it moved 1 square. Notation: exd6 e.p.",
@@ -79,11 +79,22 @@ fun LearnScreen() {
             selectedTab < 6 -> {
                 val b = mutableMapOf<Square, Piece>()
                 val pieceType = PieceType.values()[selectedTab]
-                b[Square(4, 3)] = Piece(pieceType, PieceColor.WHITE)
+                
                 if (pieceType == PieceType.PAWN) {
-                    b[Square(3, 4)] = Piece(PieceType.PAWN, PieceColor.BLACK)
-                    b[Square(5, 4)] = Piece(PieceType.PAWN, PieceColor.BLACK)
+                    // Pawn starts on e7 (4,6) to allow promotion to e8
+                    b[Square(4, 6)] = Piece(pieceType, PieceColor.WHITE)
+                } else {
+                    // Other pieces start on d4 (3,3) with a target pawn
+                    b[Square(3, 3)] = Piece(pieceType, PieceColor.WHITE)
                 }
+
+                // Add an enemy pawn for capture practice (except King, who shouldn't be adjacent to checkmate easily)
+                if (pieceType == PieceType.KNIGHT) b[Square(5, 5)] = Piece(PieceType.PAWN, PieceColor.BLACK) // e4 capture
+                if (pieceType == PieceType.BISHOP) b[Square(6, 6)] = Piece(PieceType.PAWN, PieceColor.BLACK) // g7 capture
+                if (pieceType == PieceType.ROOK) b[Square(3, 6)] = Piece(PieceType.PAWN, PieceColor.BLACK)   // d7 capture
+                if (pieceType == PieceType.QUEEN) b[Square(3, 6)] = Piece(PieceType.PAWN, PieceColor.BLACK)  // d7 capture
+                if (pieceType == PieceType.KING) b[Square(4, 4)] = Piece(PieceType.PAWN, PieceColor.BLACK)   // e5 capture
+
                 currentBoard = b
                 if (isTtsReady) tts?.speak(explanations[selectedTab], TextToSpeech.QUEUE_FLUSH, null, null)
             }
@@ -95,7 +106,7 @@ fun LearnScreen() {
                 specialStep = 1
                 delay(1500L)
                 specialStep = 2
-                delay(2000L)
+                delay(3500L)
                 currentBoard = mapOf(Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE))
                 specialStep = 3
                 if (isTtsReady) tts?.speak("Now queen-side castling, O-O-O. King moves two squares to c1, Rook jumps to d1.", TextToSpeech.QUEUE_FLUSH, null, null)
@@ -117,37 +128,37 @@ fun LearnScreen() {
                 currentBoard = mapOf(Square(3, 3) to Piece(PieceType.PAWN, PieceColor.WHITE), Square(4, 4) to Piece(PieceType.PAWN, PieceColor.BLACK))
                 specialStep = 0
                 if (isTtsReady) tts?.speak("Pawn captures diagonally. Pawn on d4 captures pawn on e5.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2000L)
+                delay(3500L)
                 specialStep = 1
-                delay(2000L)
+                delay(3500L)
                 currentBoard = mapOf(Square(2, 2) to Piece(PieceType.KNIGHT, PieceColor.WHITE), Square(4, 3) to Piece(PieceType.PAWN, PieceColor.BLACK))
                 specialStep = 2
                 if (isTtsReady) tts?.speak("Knight captures in an L-shape. Knight on c3 captures pawn on e4.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2000L)
+                delay(3500L)
                 specialStep = 3
-                delay(2000L)
+                delay(3500L)
                 currentBoard = mapOf(Square(2, 0) to Piece(PieceType.BISHOP, PieceColor.WHITE), Square(7, 5) to Piece(PieceType.PAWN, PieceColor.BLACK))
                 specialStep = 4
                 if (isTtsReady) tts?.speak("Bishop captures along diagonal. Bishop on c1 captures pawn on h6.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2000L)
+                delay(3500L)
                 specialStep = 5
-                delay(2000L)
+                delay(3500L)
                 currentBoard = mapOf(Square(0, 0) to Piece(PieceType.ROOK, PieceColor.WHITE), Square(0, 5) to Piece(PieceType.PAWN, PieceColor.BLACK))
                 specialStep = 6
                 if (isTtsReady) tts?.speak("Rook captures in a straight line. Rook on a1 captures pawn on a6.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2000L)
+                delay(3500L)
                 specialStep = 7
-                delay(2000L)
+                delay(3500L)
                 currentBoard = mapOf(Square(3, 0) to Piece(PieceType.QUEEN, PieceColor.WHITE), Square(3, 5) to Piece(PieceType.PAWN, PieceColor.BLACK))
                 specialStep = 8
                 if (isTtsReady) tts?.speak("Queen captures any direction. Queen on d1 captures pawn on d6.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2000L)
+                delay(3500L)
                 specialStep = 9
-                delay(2000L)
+                delay(3500L)
                 currentBoard = mapOf(Square(4, 0) to Piece(PieceType.KING, PieceColor.WHITE), Square(4, 1) to Piece(PieceType.PAWN, PieceColor.BLACK))
                 specialStep = 10
                 if (isTtsReady) tts?.speak("King captures one square in any direction. King on e1 captures pawn on e2.", TextToSpeech.QUEUE_FLUSH, null, null)
-                delay(2000L)
+                delay(3500L)
                 specialStep = 11
             }
         }
@@ -235,7 +246,7 @@ fun LearnScreen() {
                                     modifier = Modifier.weight(1f).fillMaxHeight().background(squareColor)
                                         .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
                                         .clickable {
-                                            if (selectedTab < 6 || selectedTab == 9) {
+                                            if (selectedTab < 6) { // Removed == 9 so user can't click during capture demo
                                                 if (isLegal) {
                                                     val newB = currentBoard.toMutableMap()
                                                     newB[square] = currentBoard[selectedSquare!!]!!

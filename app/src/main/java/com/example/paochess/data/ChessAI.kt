@@ -38,33 +38,31 @@ object ChessAI {
         val aiMoves = getAllLegalMoves(aiColor, board)
         if (aiMoves.isEmpty()) return null
 
+        // ═══ OPENING RANDOMIZATION (Make it feel human) ═══
+        // If many pieces are still on board (early game), 30% chance to pick a random move
+        if (board.size > 28 && Math.random() < 0.3) {
+            val randomMove = aiMoves.random()
+            return AIMove(randomMove.first, randomMove.second, 0, "")
+        }
+
         var bestMove: AIMove? = null
         var bestScore = Int.MIN_VALUE
+        val depth = 3 // Look 3 moves ahead
 
         for (move in aiMoves) {
             val boardAfterAI = applyMove(board, move.first, move.second)
-            
-            // Check if AI delivered checkmate
             val playerColor = if (aiColor == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
+            
+            // Instant checkmate check
             if (isCheckmate(playerColor, boardAfterAI)) {
                 return AIMove(move.first, move.second, Int.MAX_VALUE, checkmateTaunts.random())
             }
 
-            val playerMoves = getAllLegalMoves(playerColor, boardAfterAI)
-            var worstPlayerScore = Int.MAX_VALUE
-            
-            if (playerMoves.isEmpty()) {
-                worstPlayerScore = evaluateBoard(boardAfterAI, aiColor)
-            } else {
-                for (pMove in playerMoves) {
-                    val boardAfterPlayer = applyMove(boardAfterAI, pMove.first, pMove.second)
-                    val score = evaluateBoard(boardAfterPlayer, aiColor)
-                    worstPlayerScore = min(worstPlayerScore, score)
-                }
-            }
+            // ═══ MINIMAX (Look ahead) ═══
+            val score = -minimax(boardAfterAI, depth - 1, Int.MIN_VALUE + 1, Int.MAX_VALUE, playerColor, aiColor)
 
-            if (worstPlayerScore > bestScore) {
-                bestScore = worstPlayerScore
+            if (score > bestScore) {
+                bestScore = score
                 bestMove = AIMove(move.first, move.second, bestScore, "")
             }
         }
@@ -117,6 +115,53 @@ object ChessAI {
         }
         return moves
     }
+
+    // ═══ MINIMAX WITH ALPHA-BETA PRUNING ═══
+    private fun minimax(
+        board: Map<Square, Piece>,
+        depth: Int,
+        alpha: Int,
+        beta: Int,
+        currentTurn: PieceColor,
+        aiColor: PieceColor
+    ): Int {
+        var alphaVar = alpha
+        if (depth == 0) {
+            return evaluateBoard(board, aiColor)
+        }
+
+        val moves = getAllLegalMoves(currentTurn, board)
+        if (moves.isEmpty()) {
+            if (isInCheck(currentTurn, board)) {
+                // If currentTurn is mated, return bad score for them
+                return if (currentTurn == aiColor) -99999 else 99999
+            }
+            return 0 // Stalemate
+        }
+
+        var bestScore = if (currentTurn == aiColor) Int.MIN_VALUE else Int.MAX_VALUE
+
+        for (move in moves) {
+            val nextBoard = applyMove(board, move.first, move.second)
+            val nextTurn = if (currentTurn == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
+            
+            val score = minimax(nextBoard, depth - 1, alphaVar, beta, nextTurn, aiColor)
+
+            if (currentTurn == aiColor) {
+                bestScore = maxOf(bestScore, score)
+                alphaVar = maxOf(alphaVar, bestScore)
+            } else {
+                bestScore = minOf(bestScore, score)
+                beta
+            }
+
+            if (beta <= alphaVar) {
+                break // Alpha-Beta prune
+            }
+        }
+        return bestScore
+    }
+
 }
 
 
