@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.example.paochess.PuzzleAuditTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-15T18:22:34" hostname="runnervm8axu0" time="0.007">
+<testsuite name="com.example.paochess.PuzzleAuditTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-20T23:23:22" hostname="ip-10-0-130-247" time="0.003">
   <properties/>
-  <testcase name="audit every puzzle is legal" classname="com.example.paochess.PuzzleAuditTest" time="0.007"/>
+  <testcase name="audit every puzzle is legal" classname="com.example.paochess.PuzzleAuditTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
