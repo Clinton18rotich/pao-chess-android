@@ -535,15 +535,7 @@ fun PracticeScreen() {
 
         // --- FEN PRACTICE MODE UI ---
         // --- P2P MULTIPLAYER UI ---
-        if (practiceMode == "P2P") {
-            var inP2PGame by remember { mutableStateOf(false) }
-            if (!inP2PGame) {
-                P2PLobbyScreen(onNavigateToGame = { inP2PGame = true })
-            } else {
-                P2PGameScreen()
-            }
-            return@Column
-        }
+
 
         // --- P2P MULTIPLAYER UI ---
         if (practiceMode == "P2P") {
