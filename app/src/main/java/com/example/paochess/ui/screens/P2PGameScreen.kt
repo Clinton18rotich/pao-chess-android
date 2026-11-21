@@ -25,21 +25,22 @@ fun P2PGameScreen() {
 
     // ═══ LISTEN FOR OPPONENT MOVES ═══
     LaunchedEffect(Unit) {
-        while (P2PManager.connected) {
-            val msg = P2PManager.receiveMessage()
-            if (msg != null && msg.startsWith("MOVE:")) {
-                val parts = msg.removePrefix("MOVE:").split(",")
-                if (parts.size == 4) {
-                    val from = Square(parts[0].toInt(), parts[1].toInt())
-                    val to = Square(parts[2].toInt(), parts[3].toInt())
-                    
-                    // applyMove automatically promotes if it's a pawn reaching the end
-                    board = applyMove(board, from, to)
-                    myTurn = true // It's my turn now!
+        withContext(kotlinx.coroutines.Dispatchers.IO) {
+            while (P2PManager.connected) {
+                val msg = P2PManager.receiveMessage()
+                if (msg != null) {
+                    withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        if (msg.startsWith("MOVE:")) {
+                            val parts = msg.removePrefix("MOVE:").split(",")
+                            if (parts.size == 4) {
+                                val from = Square(parts[0].toInt(), parts[1].toInt())
+                                val to = Square(parts[2].toInt(), parts[3].toInt())
+                                board = applyMove(board, from, to)
+                                myTurn = true
+                            }
+                        }
+                    }
                 }
-            } else if (msg != null && msg == "PROMOTE") {
-                // The previous move was a promotion, our applyMove already handled it 
-                // based on the coordinates, so nothing extra is needed here.
             }
         }
     }

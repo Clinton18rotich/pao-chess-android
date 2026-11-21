@@ -57,6 +57,7 @@ object P2PManager {
 
     fun sendMove(fromF: Int, fromR: Int, toF: Int, toR: Int) {
         writer?.println("MOVE:$fromF,$fromR:$toF,$toR")
+        writer?.flush() // Force the data to send immediately
     }
 
     fun disconnect() {
