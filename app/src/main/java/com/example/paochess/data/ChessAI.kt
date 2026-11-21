@@ -38,9 +38,10 @@ object ChessAI {
         val aiMoves = getAllLegalMoves(aiColor, board)
         if (aiMoves.isEmpty()) return null
 
-        // ═══ OPENING RANDOMIZATION (Make it feel human) ═══
-        // If many pieces are still on board (early game), 30% chance to pick a random move
-        if (board.size > 28 && Math.random() < 0.3) {
+        // ═══ OPENING RANDOMIZATION (Only first 2 moves) ═══
+        // 32 pieces = start. 30 pieces = after 2 moves. 
+        // This only randomizes the very first move, then it plays seriously.
+        if (board.size >= 31 && Math.random() < 0.8) {
             val randomMove = aiMoves.random()
             return AIMove(randomMove.first, randomMove.second, 0, "")
         }
