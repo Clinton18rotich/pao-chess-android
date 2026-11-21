@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 object P2PManager {
     val incomingBoard = MutableStateFlow<String?>(null)
     private const val SERVICE_ID = "com.example.paochess.P2P"
-    private const val STRATEGY = Strategy.P2P_STAR // Good for 2 players
+    private val STRATEGY = Strategy.P2P_STAR
     private const val TAG = "P2P"
 
     var isHost = false
