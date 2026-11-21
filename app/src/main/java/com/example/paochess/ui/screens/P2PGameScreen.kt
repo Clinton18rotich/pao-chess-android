@@ -33,9 +33,13 @@ fun P2PGameScreen() {
                     val from = Square(parts[0].toInt(), parts[1].toInt())
                     val to = Square(parts[2].toInt(), parts[3].toInt())
                     
+                    // applyMove automatically promotes if it's a pawn reaching the end
                     board = applyMove(board, from, to)
                     myTurn = true // It's my turn now!
                 }
+            } else if (msg != null && msg == "PROMOTE") {
+                // The previous move was a promotion, our applyMove already handled it 
+                // based on the coordinates, so nothing extra is needed here.
             }
         }
     }
@@ -70,8 +74,18 @@ fun P2PGameScreen() {
                                         if (!myTurn) return@clickable
 
                                         if (isLegal) {
+                                            val movingPiece = board[selectedSquare!!]
+                                            val isPromotion = movingPiece?.type == PieceType.PAWN && (sq.rank == 7 || sq.rank == 0)
+                                            
+                                            // Apply move locally (engine handles promotion)
                                             board = applyMove(board, selectedSquare!!, sq)
+                                            
+                                            // Send to opponent
                                             P2PManager.sendMove(selectedSquare!!.file, selectedSquare!!.rank, sq.file, sq.rank)
+                                            if (isPromotion) {
+                                                P2PManager.sendPromotion() // Let opponent know
+                                            }
+                                            
                                             selectedSquare = null
                                             legalMoves = emptyList()
                                             myTurn = false

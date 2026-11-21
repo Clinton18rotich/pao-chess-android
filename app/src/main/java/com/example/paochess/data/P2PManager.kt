@@ -75,4 +75,8 @@ object P2PManager {
             null
         }
     }
+
+    fun sendPromotion() {
+        writer?.println("PROMOTE")
+    }
 }

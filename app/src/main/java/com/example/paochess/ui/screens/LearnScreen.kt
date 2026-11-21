@@ -254,10 +254,8 @@ fun LearnScreen() {
                                         .clickable {
                                             if (selectedTab < 6) { // Removed == 9 so user can't click during capture demo
                                                 if (isLegal) {
-                                                    val newB = currentBoard.toMutableMap()
-                                                    newB[square] = currentBoard[selectedSquare!!]!!
-                                                    newB.remove(selectedSquare!!)
-                                                    currentBoard = newB
+                                                    // Use the engine's applyMove to handle promotion & captures
+                                                    currentBoard = applyMove(currentBoard, selectedSquare!!, square)
                                                     selectedSquare = null
                                                     legalMoves = emptyList()
                                                     

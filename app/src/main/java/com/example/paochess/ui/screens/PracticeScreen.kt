@@ -142,6 +142,11 @@ fun PracticeScreen() {
                 colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "FEN") Orange else DarkSurface, contentColor = if (practiceMode == "FEN") Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("FEN") }
+            Button(
+                onClick = { practiceMode = "P2P" },
+                colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "P2P") Orange else DarkSurface, contentColor = if (practiceMode == "P2P") Color.Black else White),
+                modifier = Modifier.weight(1f)
+            ) { Text("Friend") }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -510,6 +515,17 @@ fun PracticeScreen() {
 
 
         // --- FEN PRACTICE MODE UI ---
+        // --- P2P MULTIPLAYER UI ---
+        if (practiceMode == "P2P") {
+            var inP2PGame by remember { mutableStateOf(false) }
+            if (!inP2PGame) {
+                P2PLobbyScreen(onNavigateToGame = { inP2PGame = true })
+            } else {
+                P2PGameScreen()
+            }
+            return@Column
+        }
+
         // --- P2P MULTIPLAYER UI ---
         if (practiceMode == "P2P") {
             var inP2PGame by remember { mutableStateOf(false) }
