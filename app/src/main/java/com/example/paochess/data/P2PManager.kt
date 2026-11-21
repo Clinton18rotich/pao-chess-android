@@ -66,4 +66,13 @@ object P2PManager {
             clientSocket?.close()
         } catch (e: Exception) {}
     }
+
+    // Read a message from the socket
+    fun receiveMessage(): String? {
+        return try {
+            reader?.readLine()
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

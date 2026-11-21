@@ -246,12 +246,14 @@ fun GameViewerScreen() {
     // Auto-play with proper voice sync
     LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
-            if (currentStep < moves.size) {
-                delay(2000L) // 2 seconds delay as requested
+            if (currentStep < game.moves.size) {
+                // Just wait 2 seconds between moves. No TTS reading for moves.
+                delay(2000L) 
                 currentStep++
             } else {
+                // End of game
                 isPlaying = false
-                tts?.stop()
+                tts?.stop() // Ensure TTS is stopped
             }
         }
     }

@@ -23,6 +23,23 @@ fun P2PGameScreen() {
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
     var myTurn by remember { mutableStateOf(P2PManager.isHost) } // Host is White
 
+    // ═══ LISTEN FOR OPPONENT MOVES ═══
+    LaunchedEffect(Unit) {
+        while (P2PManager.connected) {
+            val msg = P2PManager.receiveMessage()
+            if (msg != null && msg.startsWith("MOVE:")) {
+                val parts = msg.removePrefix("MOVE:").split(",")
+                if (parts.size == 4) {
+                    val from = Square(parts[0].toInt(), parts[1].toInt())
+                    val to = Square(parts[2].toInt(), parts[3].toInt())
+                    
+                    board = applyMove(board, from, to)
+                    myTurn = true // It's my turn now!
+                }
+            }
+        }
+    }
+
     // Since socket listening happens in background, we'd ideally use a ViewModel or Flow here
     // For this simple implementation, we assume the move sync is handled by calling a function
     // (This part requires a bit more Compose state management for production)

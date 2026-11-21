@@ -47,8 +47,26 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
         modifier = Modifier.fillMaxSize().background(DarkBg).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("📡 Offline P2P", color = Orange, fontSize = 28.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-        Spacer(Modifier.height(32.dp))
+        Text("👥 Play with a Friend", color = Orange, fontSize = 26.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+        Spacer(Modifier.height(16.dp))
+
+        // ═══ SETUP GUIDE ═══
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A)),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("📖 How to Play (No Internet Needed)", color = Green, fontSize = 16.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                Text("1. Player 1 (Host) taps 'Host Game'.", color = White, fontSize = 13.sp)
+                Text("2. Player 1 goes to phone Settings → turns ON Wi-Fi Hotspot.", color = White, fontSize = 13.sp)
+                Text("3. Player 2 connects to Player 1's Wi-Fi in Settings.", color = White, fontSize = 13.sp)
+                Text("4. Player 2 taps 'Scan to Join' and scans the QR Code.", color = White, fontSize = 13.sp)
+                Spacer(Modifier.height(8.dp))
+                Text("Once connected, the board will appear on both phones!", color = Orange, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            }
+        }
+        Spacer(Modifier.height(16.dp))
 
         if (!isHost) {
             // Menu Options
@@ -86,7 +104,8 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
 
         } else {
             // Host Screen
-            Text("Turn on your Wi-Fi Hotspot!", color = White, fontSize = 18.sp)
+            Text("⚠️ ACTION REQUIRED: Turn on Wi-Fi Hotspot in Settings!", color = Orange, fontSize = 16.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
             Text("Then have your friend scan this code:", color = LightGrey, fontSize = 14.sp)
             Spacer(Modifier.height(24.dp))
             
