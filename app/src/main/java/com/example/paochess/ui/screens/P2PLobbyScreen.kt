@@ -63,10 +63,11 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("📖 How to Play (Xender Style)", color = Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
-                Text("1. Player 1 taps 'Host Game'.", color = White, fontSize = 13.sp)
-                Text("2. Player 2 taps 'Scan for Game'.", color = White, fontSize = 13.sp)
-                Text("3. Keep the phones near each other.", color = White, fontSize = 13.sp)
-                Text("4. Both phones need Location ON.", color = White, fontSize = 13.sp)
+                Text("1. Ensure Location is ON for both phones.", color = White, fontSize = 13.sp)
+                Text("2. Allow the Bluetooth & Nearby permissions.", color = White, fontSize = 13.sp)
+                Text("3. Player 1 taps 'Host Game'.", color = White, fontSize = 13.sp)
+                Text("4. Player 2 taps 'Scan for Game'.", color = White, fontSize = 13.sp)
+                Text("5. Keep phones close (Bluetooth range).", color = White, fontSize = 13.sp)
             }
         }
 
