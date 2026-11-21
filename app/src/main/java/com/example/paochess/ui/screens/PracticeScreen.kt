@@ -153,11 +153,29 @@ fun PracticeScreen() {
 
         if (practiceMode == "AI") {
             // AI Game State
-            var aiBoard by remember { mutableStateOf(getInitialBoard()) }
+            // Custom Saver for the board map so it survives tab switches
+            val boardSaver = androidx.compose.runtime.saveable.Saver<Map<Square, Piece>, String>(
+                save = { board ->
+                    board.entries.joinToString("|") { "${it.key.file},${it.key.rank},${it.value.type.name},${it.value.color.name}" }
+                },
+                restore = { str ->
+                    if (str.isEmpty()) getInitialBoard() else {
+                        val map = mutableMapOf<Square, Piece>()
+                        str.split("|").forEach { entry ->
+                            val parts = entry.split(",")
+                            if (parts.size == 4) {
+                                map[Square(parts[0].toInt(), parts[1].toInt())] = Piece(PieceType.valueOf(parts[2]), PieceColor.valueOf(parts[3]))
+                            }
+                        }
+                        map
+                    }
+                }
+            )
+            var aiBoard by rememberSaveable(stateSaver = boardSaver) { mutableStateOf(getInitialBoard()) }
             var aiSelectedSquare by remember { mutableStateOf<Square?>(null) }
             var aiLegalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
             var isAiThinking by remember { mutableStateOf(false) }
-            var gameStatus by remember { mutableStateOf("Your turn (White)") }
+            var gameStatus by rememberSaveable { mutableStateOf("Your turn (White)") }
             var lastAiTaunt by remember { mutableStateOf("") }
             var capturedSquareFlash by remember { mutableStateOf<Square?>(null) }
             var aiThinkingText by remember { mutableStateOf("") }
@@ -167,7 +185,7 @@ fun PracticeScreen() {
             var showAnalysis by remember { mutableStateOf(false) }
             var showReplay by remember { mutableStateOf(false) }
             var showSavedReplays by remember { mutableStateOf(false) }
-            var moveCounter by remember { mutableStateOf(1) }
+            var moveCounter by rememberSaveable { mutableStateOf(1) }
             
             // Reset voice to coach pitch when entering AI mode initially
             LaunchedEffect(Unit) {

@@ -19,10 +19,30 @@ import com.example.paochess.ui.theme.*
 
 @Composable
 fun P2PGameScreen() {
-    var board by remember { mutableStateOf(getInitialBoard()) }
+
+    // Custom Saver so the board survives tab switches
+    val boardSaver = androidx.compose.runtime.saveable.Saver<Map<Square, Piece>, String>(
+        save = { board ->
+            board.entries.joinToString("|") { "${it.key.file},${it.key.rank},${it.value.type.name},${it.value.color.name}" }
+        },
+        restore = { str ->
+            if (str.isEmpty()) getInitialBoard() else {
+                val map = mutableMapOf<Square, Piece>()
+                str.split("|").forEach { entry ->
+                    val parts = entry.split(",")
+                    if (parts.size == 4) {
+                        map[Square(parts[0].toInt(), parts[1].toInt())] = Piece(PieceType.valueOf(parts[2]), PieceColor.valueOf(parts[3]))
+                    }
+                }
+                map
+            }
+        }
+    )
+
+    var board by rememberSaveable(stateSaver = boardSaver) { mutableStateOf(getInitialBoard()) }
     var selectedSquare by remember { mutableStateOf<Square?>(null) }
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
-    var myTurn by remember { mutableStateOf(P2PManager.isHost) } // Host is White
+    var myTurn by rememberSaveable { mutableStateOf(P2PManager.isHost) } // Host is White
 
     // ═══ LISTEN FOR OPPONENT MOVES ═══
     LaunchedEffect(Unit) {

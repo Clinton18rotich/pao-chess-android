@@ -25,7 +25,7 @@ import java.net.NetworkInterface
 
 @Composable
 fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
-    var isHost by remember { mutableStateOf(false) }
+    var isHost by rememberSaveable { mutableStateOf(false) }
     var myIp by remember { mutableStateOf("") }
     var qrBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
