@@ -32,7 +32,7 @@ fun LearnScreen() {
     var selectedTab by remember { mutableStateOf(0) }
 
     val explanations = listOf(
-        "PAWN: Moves forward 1 (or 2 on first move). Captures diagonally. Move to e8 to promote! Notation: e4, exd5, e8=Q.",
+        "PAWN: Moves forward 1 square. Captures diagonally. You can capture the black pawn on e5, or push the other pawn to e8 to promote it to a Queen!",
         "KNIGHT: Moves in an L-shape and jumps over pieces. You can capture the enemy Pawn. Notation: Nf3, Nxf3.",
         "BISHOP: Moves diagonally any number of squares. You can capture the enemy Pawn. Notation: Bc4, Bxc4.",
         "ROOK: Moves horizontally or vertically. You can capture the enemy Pawn. Notation: Ra1, Rxa1.",
@@ -81,7 +81,13 @@ fun LearnScreen() {
                 val pieceType = PieceType.values()[selectedTab]
                 
                 if (pieceType == PieceType.PAWN) {
-                    // Pawn starts on e7 (4,6) to allow promotion to e8
+                    // White pawn on d4 to show move/capture
+                    b[Square(3, 3)] = Piece(pieceType, PieceColor.WHITE)
+                    // Black pawn on d5 (blocks forward move)
+                    b[Square(3, 4)] = Piece(PieceType.PAWN, PieceColor.BLACK)
+                    // Black pawn on e5 (to be captured diagonally)
+                    b[Square(4, 4)] = Piece(PieceType.PAWN, PieceColor.BLACK)
+                    // White pawn on e7 to show promotion
                     b[Square(4, 6)] = Piece(pieceType, PieceColor.WHITE)
                 } else {
                     // Other pieces start on d4 (3,3) with a target pawn

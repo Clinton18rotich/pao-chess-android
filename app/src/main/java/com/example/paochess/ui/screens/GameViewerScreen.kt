@@ -244,59 +244,15 @@ fun GameViewerScreen() {
     val game = FAMOUS_GAMES[currentGameIndex]
 
     // Auto-play with proper voice sync
-    LaunchedEffect(isPlaying) {
+    LaunchedEffect(isPlaying, currentStep) {
         if (isPlaying) {
-            while (currentStep < game.moves.size) {
-                val moveToPlay = game.moves[currentStep]
-                val moveStartTime = System.currentTimeMillis()
-                
-                // 1. Create completion signal BEFORE speaking
-                val completionSignal = speechSignalHolder.newSignal()
-                
-                // 2. Speak
-                if (isTtsReady) {
-                    val textToSpeak = if (currentStep == 0) {
-                        "This is one of the most famous games in chess history. ${game.description} ${moveToPlay.description}"
-                    } else {
-                        moveToPlay.description
-                    }
-                    tts?.speak(textToSpeak, TextToSpeech.QUEUE_FLUSH, null, null)
-                }
-                
-                // 3. Wait for voice to finish (60s safety timeout)
-                try {
-                    kotlinx.coroutines.withTimeout(15000L) {
-                        completionSignal.await()
-                    }
-                } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-                    // Voice took too long or failed — fall through to floor
-                }
-                
-                // 4. FLOOR: minimum wait based on text length (~15 chars/second, 3s-15s)
-                val textLen = if (isTtsReady) {
-                    if (currentStep == 0) 
-                        "This is one of the most famous games in chess history. ${game.description} ${moveToPlay.description}".length
-                    else moveToPlay.description.length
-                } else 0
-                val estimatedMs = (textLen / 15.0 * 1000).toLong().coerceIn(3000L, 15000L)
-                
-                val elapsed = System.currentTimeMillis() - moveStartTime
-                if (elapsed < estimatedMs) {
-                    delay(estimatedMs - elapsed)
-                }
-                
-                // 5. Move the piece
-                delay(500L)
+            if (currentStep < moves.size) {
+                delay(2000L) // 2 seconds delay as requested
                 currentStep++
-                
-                if (currentStep >= game.moves.size) {
-                    isPlaying = false
-                    break
-                }
-                
-                delay(500L)
+            } else {
+                isPlaying = false
+                tts?.stop()
             }
-            isPlaying = false
         }
     }
 
