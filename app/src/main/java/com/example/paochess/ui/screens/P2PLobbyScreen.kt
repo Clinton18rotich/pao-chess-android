@@ -39,7 +39,7 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
     // QR Scanner launcher
     val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
-            P2PManager.joinHost(result.contents, onMessageReceived)
+            P2PManager.joinHost(result.contents, onConnected = { onNavigateToGame() }, onMessage = onMessageReceived)
             onNavigateToGame()
         }
     }
@@ -83,7 +83,7 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
                         bmp.setPixel(x, y, if (bitMatrix.get(x, y)) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
                     }
                     qrBitmap = bmp
-                    P2PManager.startHost(onMessageReceived)
+                    P2PManager.startHost(onConnected = { onNavigateToGame() }, onMessage = onMessageReceived)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black),
                 modifier = Modifier.fillMaxWidth().height(60.dp)
@@ -122,10 +122,7 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
             Text("IP: $myIp", color = Green, fontSize = 16.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
             
             Spacer(Modifier.height(32.dp))
-            // In a real app, you'd use a Compose state that flips when P2PManager.connected is true
-            Button(onClick = { onNavigateToGame() }, modifier = Modifier.fillMaxWidth()) {
-                Text("Start Game (Wait for connection)")
-            }
+            Text("Waiting for opponent to connect...", color = LightGrey, fontSize = 14.sp)
         }
     }
 }

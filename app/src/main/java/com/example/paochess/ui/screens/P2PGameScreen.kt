@@ -1,6 +1,5 @@
 package com.example.paochess.ui.screens
 
-import kotlinx.coroutines.withContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,65 +15,55 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.paochess.data.*
 import com.example.paochess.ui.theme.*
+import kotlinx.coroutines.withContext
+
+fun serializeBoard(board: Map<Square, Piece>): String {
+    return board.entries.joinToString("|") { "${it.key.file},${it.key.rank},${it.value.type.name},${it.value.color.name}" }
+}
+
+fun deserializeBoard(str: String): Map<Square, Piece> {
+    if (str.isEmpty()) return getInitialBoard()
+    val map = mutableMapOf<Square, Piece>()
+    str.split("|").forEach { entry ->
+        val parts = entry.split(",")
+        if (parts.size == 4) {
+            map[Square(parts[0].toInt(), parts[1].toInt())] = Piece(PieceType.valueOf(parts[2]), PieceColor.valueOf(parts[3]))
+        }
+    }
+    return map
+}
 
 @Composable
 fun P2PGameScreen() {
-
-    // Custom Saver so the board survives tab switches
-    val boardSaver = androidx.compose.runtime.saveable.Saver<Map<Square, Piece>, String>(
-        save = { board ->
-            board.entries.joinToString("|") { "${it.key.file},${it.key.rank},${it.value.type.name},${it.value.color.name}" }
-        },
-        restore = { str ->
-            if (str.isEmpty()) getInitialBoard() else {
-                val map = mutableMapOf<Square, Piece>()
-                str.split("|").forEach { entry ->
-                    val parts = entry.split(",")
-                    if (parts.size == 4) {
-                        map[Square(parts[0].toInt(), parts[1].toInt())] = Piece(PieceType.valueOf(parts[2]), PieceColor.valueOf(parts[3]))
-                    }
-                }
-                map
-            }
-        }
-    )
-
-    var board by rememberSaveable(stateSaver = boardSaver) { mutableStateOf(getInitialBoard()) }
+    var board by remember { mutableStateOf(getInitialBoard()) }
     var selectedSquare by remember { mutableStateOf<Square?>(null) }
     var legalMoves by remember { mutableStateOf<List<Square>>(emptyList()) }
-    var myTurn by rememberSaveable { mutableStateOf(P2PManager.isHost) } // Host is White
+    
+    // Host is White, Join is Black
+    val myColor = if (P2PManager.isHost) PieceColor.WHITE else PieceColor.BLACK
+    var currentTurn by remember { mutableStateOf(PieceColor.WHITE) }
 
-    // ═══ LISTEN FOR OPPONENT MOVES ═══
+    // Listen for incoming board states
     LaunchedEffect(Unit) {
         withContext(kotlinx.coroutines.Dispatchers.IO) {
             while (P2PManager.connected) {
-                val msg = P2PManager.receiveMessage()
-                if (msg != null) {
-                    withContext(kotlinx.coroutines.Dispatchers.Main) {
-                        if (msg.startsWith("MOVE:")) {
-                            val parts = msg.removePrefix("MOVE:").split(",")
-                            if (parts.size == 4) {
-                                val from = Square(parts[0].toInt(), parts[1].toInt())
-                                val to = Square(parts[2].toInt(), parts[3].toInt())
-                                board = applyMove(board, from, to)
-                                myTurn = true
-                            }
-                        }
-                    }
-                }
+                // Not used directly, P2PManager handles the threading
+                kotlinx.coroutines.delay(500)
             }
         }
     }
-
-    // Since socket listening happens in background, we'd ideally use a ViewModel or Flow here
-    // For this simple implementation, we assume the move sync is handled by calling a function
-    // (This part requires a bit more Compose state management for production)
 
     Column(
         modifier = Modifier.fillMaxSize().background(DarkBg).padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(if (myTurn) "Your Turn" else "Opponent's Turn", color = if (myTurn) Green else LightGrey, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text("Room Active", color = Orange, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        
+        Text(
+            if (currentTurn == myColor) "Your Turn" else "Opponent's Turn", 
+            color = if (currentTurn == myColor) Green else LightGrey, 
+            fontSize = 18.sp
+        )
         Spacer(Modifier.height(16.dp))
 
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(Color(0xFF2B1A10)).padding(4.dp)) {
@@ -94,25 +82,15 @@ fun P2PGameScreen() {
                                 modifier = Modifier.weight(1f).fillMaxHeight().background(sqColor)
                                     .border(if (isSelected) 3.dp else 0.dp, if (isSelected) Orange else Color.Transparent)
                                     .clickable {
-                                        if (!myTurn) return@clickable
+                                        if (currentTurn != myColor) return@clickable
 
                                         if (isLegal) {
-                                            val movingPiece = board[selectedSquare!!]
-                                            val isPromotion = movingPiece?.type == PieceType.PAWN && (sq.rank == 7 || sq.rank == 0)
-                                            
-                                            // Apply move locally (engine handles promotion)
                                             board = applyMove(board, selectedSquare!!, sq)
-                                            
-                                            // Send to opponent
-                                            P2PManager.sendMove(selectedSquare!!.file, selectedSquare!!.rank, sq.file, sq.rank)
-                                            if (isPromotion) {
-                                                P2PManager.sendPromotion() // Let opponent know
-                                            }
-                                            
+                                            P2PManager.sendBoardState(serializeBoard(board))
                                             selectedSquare = null
                                             legalMoves = emptyList()
-                                            myTurn = false
-                                        } else if (piece != null && piece.color == (if (P2PManager.isHost) PieceColor.WHITE else PieceColor.BLACK)) {
+                                            currentTurn = if (myColor == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
+                                        } else if (piece != null && piece.color == myColor) {
                                             selectedSquare = sq
                                             legalMoves = getLegalMoves(sq, piece, board)
                                         } else {

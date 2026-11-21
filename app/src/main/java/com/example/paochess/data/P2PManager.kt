@@ -1,5 +1,6 @@
 package com.example.paochess.data
 
+import android.util.Log
 import kotlinx.coroutines.*
 import java.io.*
 import java.net.*
@@ -7,35 +8,45 @@ import java.net.*
 object P2PManager {
     var isHost = false
     var connected = false
+    
     private var serverSocket: ServerSocket? = null
     private var clientSocket: Socket? = null
     private var reader: BufferedReader? = null
     private var writer: PrintWriter? = null
+    private var listenJob: Job? = null
 
     // Start a server and listen for a connection
-    fun startHost(onMessage: (String) -> Unit) {
+    fun startHost(onConnected: () -> Unit, onMessage: (String) -> Unit) {
         isHost = true
-        CoroutineScope(Dispatchers.IO).launch {
+        listenJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 serverSocket = ServerSocket(8888)
+                // Wait for the other phone to connect
                 clientSocket = serverSocket?.accept()
                 connected = true
                 setupStreams()
+                withContext(Dispatchers.Main) { onConnected() }
                 listenForMessages(onMessage)
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: Exception) {
+                Log.e("P2P", "Host error: ${e.message}")
+            }
         }
     }
 
     // Connect to a host IP
-    fun joinHost(ip: String, onMessage: (String) -> Unit) {
+    fun joinHost(ip: String, onConnected: () -> Unit, onMessage: (String) -> Unit) {
         isHost = false
-        CoroutineScope(Dispatchers.IO).launch {
+        listenJob = CoroutineScope(Dispatchers.IO).launch {
             try {
                 clientSocket = Socket(ip, 8888)
                 connected = true
                 setupStreams()
+                withContext(Dispatchers.Main) { onConnected() }
                 listenForMessages(onMessage)
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: Exception) {
+                Log.e("P2P", "Join error: ${e.message}")
+                withContext(Dispatchers.Main) { onConnected() } // Still proceed for fallback
+            }
         }
     }
 
@@ -52,32 +63,22 @@ object P2PManager {
                     withContext(Dispatchers.Main) { onMessage(msg) }
                 }
             }
-        } catch (e: Exception) { connected = false }
+        } catch (e: Exception) {
+            connected = false
+        }
     }
 
-    fun sendMove(fromF: Int, fromR: Int, toF: Int, toR: Int) {
-        writer?.println("MOVE:$fromF,$fromR:$toF,$toR")
-        writer?.flush() // Force the data to send immediately
+    fun sendBoardState(serializedBoard: String) {
+        writer?.println("BOARD:$serializedBoard")
+        writer?.flush()
     }
 
     fun disconnect() {
         connected = false
+        listenJob?.cancel()
         try {
             serverSocket?.close()
             clientSocket?.close()
         } catch (e: Exception) {}
-    }
-
-    // Read a message from the socket
-    fun receiveMessage(): String? {
-        return try {
-            reader?.readLine()
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    fun sendPromotion() {
-        writer?.println("PROMOTE")
     }
 }
