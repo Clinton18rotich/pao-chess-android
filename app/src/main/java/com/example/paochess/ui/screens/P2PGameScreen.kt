@@ -43,12 +43,13 @@ fun P2PGameScreen() {
     val myColor = if (P2PManager.isHost) PieceColor.WHITE else PieceColor.BLACK
     var currentTurn by remember { mutableStateOf(PieceColor.WHITE) }
 
-    // Listen for incoming board states
+    // Listen for incoming board states from Nearby Connections
     LaunchedEffect(Unit) {
-        withContext(kotlinx.coroutines.Dispatchers.IO) {
-            while (P2PManager.connected) {
-                // Not used directly, P2PManager handles the threading
-                kotlinx.coroutines.delay(500)
+        P2PManager.incomingBoard.collect { serialized ->
+            if (serialized != null) {
+                board = deserializeBoard(serialized)
+                // Flip the turn since opponent just moved
+                currentTurn = if (myColor == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
             }
         }
     }
