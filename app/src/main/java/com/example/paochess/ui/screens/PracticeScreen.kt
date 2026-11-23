@@ -187,7 +187,7 @@ fun PracticeScreen() {
             var showReplay by remember { mutableStateOf(false) }
             var showSavedReplays by remember { mutableStateOf(false) }
             var moveCounter by rememberSaveable { mutableStateOf(1) }
-            var aiDifficulty by rememberSaveable { mutableStateOf("medium") }
+            var aiDifficulty by rememberSaveable { mutableStateOf("hard") }
             
             // Reset voice to coach pitch when entering AI mode initially
             LaunchedEffect(Unit) {
@@ -455,6 +455,25 @@ fun PracticeScreen() {
             
             Spacer(Modifier.height(16.dp))
             
+            // ═══ DIFFICULTY SELECTOR ═══
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                listOf("easy", "hard").forEach { level ->
+                    Button(
+                        onClick = { aiDifficulty = level },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (aiDifficulty == level) Orange else DarkSurface,
+                            contentColor = if (aiDifficulty == level) Color.Black else White
+                        ),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(level.uppercase(), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
