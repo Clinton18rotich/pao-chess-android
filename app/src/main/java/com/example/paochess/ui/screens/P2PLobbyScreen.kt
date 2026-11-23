@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.*
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -32,12 +33,17 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
     val context = LocalContext.current
     var isHost by remember { mutableStateOf(false) }
     var devices by remember { mutableStateOf<List<WifiP2pDevice>>(emptyList()) }
-    
+
+    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.NEARBY_WIFI_DEVICES)
+    } else {
+        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { granted ->
         if (granted.values.all { it }) {
-            // Start discovery once permissions are granted
             val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
             val channel = manager.initialize(context, context.mainLooper, null)
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -47,6 +53,8 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
     }
 
     DisposableEffect(Unit) {
+        permissionLauncher.launch(permissions)
+        
         val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
         val channel = manager.initialize(context, context.mainLooper, null)
         
@@ -62,8 +70,6 @@ fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
             }
         }
         context.registerReceiver(receiver, IntentFilter(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION))
-        
-        permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
 
         onDispose { context.unregisterReceiver(receiver) }
     }
