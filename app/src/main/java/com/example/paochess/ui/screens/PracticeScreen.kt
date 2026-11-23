@@ -61,7 +61,8 @@ fun deserializeMoves(json: String): List<RecordedMove> {
 
 @Composable
 fun PracticeScreen() {
-    var practiceMode by remember { mutableStateOf("TACTICS") } // TACTICS, AI, FEN
+    var practiceMode by remember { mutableStateOf("TACTICS") }
+    var showLogs by remember { mutableStateOf(false) } // TACTICS, AI, FEN
     var currentPraise by remember { mutableStateOf("") }
 
     
@@ -139,7 +140,11 @@ fun PracticeScreen() {
                 onClick = { 
                     practiceMode = "FEN"
                     speak("Solve the FEN puzzle. Find the forced mate.")
-                },
+                }
+        androidx.compose.material3.TextButton(onClick = { showLogs = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("🐞 View Crash Logs", color = LightGrey, fontSize = 12.sp)
+        }
+,
                 colors = ButtonDefaults.buttonColors(containerColor = if (practiceMode == "FEN") Orange else DarkSurface, contentColor = if (practiceMode == "FEN") Color.Black else White),
                 modifier = Modifier.weight(1f)
             ) { Text("FEN") }
@@ -1264,4 +1269,33 @@ fun SavedReplaysDialog(context: android.content.Context, onDismiss: () -> Unit) 
             }
         }
     }
+        if (showLogs) {
+            androidx.compose.ui.window.Dialog(onDismissRequest = { showLogs = false }) {
+                androidx.compose.material3.Card(
+                    colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp).heightIn(max = 500.dp)
+                ) {
+                    androidx.compose.foundation.layout.Column(modifier = Modifier.padding(16.dp)) {
+                        Text("🐞 Crash Log", color = Orange, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        androidx.compose.material3.TextButton(onClick = { showLogs = false }) {
+                            Text("Close", color = LightGrey)
+                        }
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
+                        androidx.compose.foundation.rememberScrollState().let { scrollState ->
+                            androidx.compose.foundation.layout.Column(
+                                modifier = Modifier.verticalScroll(scrollState)
+                            ) {
+                                Text(
+                                    text = com.example.paochess.data.CrashLogger.getLogs(context),
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 }
