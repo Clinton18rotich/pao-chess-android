@@ -1,11 +1,19 @@
 package com.example.paochess.ui.screens
 
 import android.Manifest
-import android.os.Build
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.net.wifi.p2p.*
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,99 +23,87 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.paochess.data.P2PManager
+import androidx.core.app.ActivityCompat
+import com.example.paochess.data.WifiDirectManager
 import com.example.paochess.ui.theme.*
 
 @Composable
 fun P2PLobbyScreen(onNavigateToGame: () -> Unit) {
     val context = LocalContext.current
-    var isHosting by remember { mutableStateOf(false) }
-    var isScanning by remember { mutableStateOf(false) }
-    var statusText by remember { mutableStateOf("") }
-    var permissionsGranted by remember { mutableStateOf(false) }
-
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        arrayOf(
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH_ADVERTISE,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-    } else {
-        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-    }
-
+    var isHost by remember { mutableStateOf(false) }
+    var devices by remember { mutableStateOf<List<WifiP2pDevice>>(emptyList()) }
+    
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { granted ->
-        if (granted.values.all { it }) permissionsGranted = true
-        else statusText = "Permissions denied. Cannot connect."
+        if (granted.values.all { it }) {
+            // Start discovery once permissions are granted
+            val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+            val channel = manager.initialize(context, context.mainLooper, null)
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                manager.discoverPeers(channel, null)
+            }
+        }
     }
 
-    LaunchedEffect(Unit) {
-        permissionLauncher.launch(permissions)
+    DisposableEffect(Unit) {
+        val manager = context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+        val channel = manager.initialize(context, context.mainLooper, null)
+        
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                if (intent.action == WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION) {
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        manager.requestPeers(channel) { peerList ->
+                            devices = peerList.deviceList.toList()
+                        }
+                    }
+                }
+            }
+        }
+        context.registerReceiver(receiver, IntentFilter(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION))
+        
+        permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION))
+
+        onDispose { context.unregisterReceiver(receiver) }
     }
 
     Column(
         modifier = Modifier.fillMaxSize().background(DarkBg).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("👥 Play with a Friend", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("👥 Nearby Devices", color = Orange, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
-
-        Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF2A2A2A)),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("📖 How to Play (Xender Style)", color = Green, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(8.dp))
-                Text("1. Ensure Location is ON for both phones.", color = White, fontSize = 13.sp)
-                Text("2. Allow the Bluetooth & Nearby permissions.", color = White, fontSize = 13.sp)
-                Text("3. Player 1 taps 'Host Game'.", color = White, fontSize = 13.sp)
-                Text("4. Player 2 taps 'Scan for Game'.", color = White, fontSize = 13.sp)
-                Text("5. Keep phones close (Bluetooth range).", color = White, fontSize = 13.sp)
-            }
-        }
-
-        if (statusText.isNotEmpty()) {
-            Text(statusText, color = Red, fontSize = 14.sp, modifier = Modifier.padding(bottom = 16.dp))
-        }
-
-        if (!isHosting && !isScanning) {
+        
+        if (!isHost) {
             Button(
                 onClick = {
-                    if (!permissionsGranted) { permissionLauncher.launch(permissions); return@Button }
-                    isHosting = true
-                    statusText = "Advertising game..."
-                    P2PManager.startHost(context, onConnected = { onNavigateToGame() }, onMessage = {})
+                    isHost = true
+                    WifiDirectManager.startHost(context, onReady = { onNavigateToGame() })
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Green, contentColor = Color.Black),
                 modifier = Modifier.fillMaxWidth().height(60.dp)
             ) { Text("Host Game", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (!permissionsGranted) { permissionLauncher.launch(permissions); return@Button }
-                    isScanning = true
-                    statusText = "Searching for nearby games..."
-                    P2PManager.joinHost(context, onConnected = { onNavigateToGame() }, onMessage = {})
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Orange, contentColor = Color.Black),
-                modifier = Modifier.fillMaxWidth().height(60.dp)
-            ) { Text("Scan for Game", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+            
+            Spacer(Modifier.height(24.dp))
+            Text("Available Devices:", color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                items(devices) { device ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable {
+                            WifiDirectManager.joinHost(context, device)
+                            onNavigateToGame()
+                        },
+                        colors = CardDefaults.cardColors(containerColor = DarkSurface)
+                    ) {
+                        Text(device.deviceName, color = White, modifier = Modifier.padding(16.dp))
+                    }
+                }
+            }
         } else {
-            Text(statusText, color = White, fontSize = 18.sp)
+            Text("Hosting... Waiting for opponent to connect.", color = Orange, fontSize = 18.sp)
             CircularProgressIndicator(color = Orange, modifier = Modifier.padding(16.dp))
-            Spacer(Modifier.height(16.dp))
-            TextButton(onClick = {
-                isHosting = false
-                isScanning = false
-                P2PManager.disconnect()
-            }) { Text("Cancel", color = LightGrey) }
         }
     }
 }
