@@ -187,6 +187,7 @@ fun PracticeScreen() {
             var showReplay by remember { mutableStateOf(false) }
             var showSavedReplays by remember { mutableStateOf(false) }
             var moveCounter by rememberSaveable { mutableStateOf(1) }
+            var aiDifficulty by rememberSaveable { mutableStateOf("medium") }
             
             // Reset voice to coach pitch when entering AI mode initially
             LaunchedEffect(Unit) {
@@ -201,7 +202,7 @@ fun PracticeScreen() {
                 if (isAiThinking) {
                     delay(600L)  // Think time
                     
-                    val bestMove = ChessAI.getBestMove(aiBoard, PieceColor.BLACK)
+                    val bestMove = ChessAI.getBestMove(aiBoard, PieceColor.BLACK, aiDifficulty)
                     
                     if (bestMove != null) {
                         // Record the AI's move BEFORE applying

@@ -34,37 +34,63 @@ object ChessAI {
         "Game over. That was embarrassing to watch."
     )
 
-    fun getBestMove(board: Map<Square, Piece>, aiColor: PieceColor = PieceColor.BLACK): AIMove? {
+    fun getBestMove(board: Map<Square, Piece>, aiColor: PieceColor = PieceColor.BLACK, difficulty: String = "medium"): AIMove? {
         val aiMoves = getAllLegalMoves(aiColor, board)
         if (aiMoves.isEmpty()) return null
 
-        // ═══ OPENING RANDOMIZATION (Only first 2 moves) ═══
-        // 32 pieces = start. 30 pieces = after 2 moves. 
-        // This only randomizes the very first move, then it plays seriously.
-        if (board.size >= 31 && Math.random() < 0.8) {
-            val randomMove = aiMoves.random()
-            return AIMove(randomMove.first, randomMove.second, 0, "")
-        }
-
         var bestMove: AIMove? = null
-        var bestScore = Int.MIN_VALUE
-        val depth = 3 // Look 3 moves ahead
+        val playerColor = if (aiColor == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
 
-        for (move in aiMoves) {
-            val boardAfterAI = applyMove(board, move.first, move.second)
-            val playerColor = if (aiColor == PieceColor.WHITE) PieceColor.BLACK else PieceColor.WHITE
-            
-            // Instant checkmate check
-            if (isCheckmate(playerColor, boardAfterAI)) {
-                return AIMove(move.first, move.second, Int.MAX_VALUE, checkmateTaunts.random())
+        if (difficulty == "easy") {
+            // EASY: Random moves mostly, but captures if possible
+            val captures = aiMoves.filter { board[it.second] != null }
+            val randomMove = if (captures.isNotEmpty() && Math.random() < 0.4) captures.random() else aiMoves.random()
+            bestMove = AIMove(randomMove.first, randomMove.second, 0, "")
+        } 
+        else if (difficulty == "hard") {
+            // HARD: The original Golden Master logic (2-ply, aggressive)
+            var bestScore = Int.MIN_VALUE
+            for (move in aiMoves) {
+                val boardAfterAI = applyMove(board, move.first, move.second)
+                if (isCheckmate(playerColor, boardAfterAI)) {
+                    return AIMove(move.first, move.second, Int.MAX_VALUE, checkmateTaunts.random())
+                }
+                val playerMoves = getAllLegalMoves(playerColor, boardAfterAI)
+                var worstPlayerScore = Int.MAX_VALUE
+                if (playerMoves.isEmpty()) {
+                    worstPlayerScore = evaluateBoard(boardAfterAI, aiColor)
+                } else {
+                    for (pMove in playerMoves) {
+                        val boardAfterPlayer = applyMove(boardAfterAI, pMove.first, pMove.second)
+                        val score = evaluateBoard(boardAfterPlayer, aiColor)
+                        worstPlayerScore = minOf(worstPlayerScore, score)
+                    }
+                }
+                if (worstPlayerScore > bestScore) {
+                    bestScore = worstPlayerScore
+                    bestMove = AIMove(move.first, move.second, bestScore, "")
+                }
             }
-
-            // ═══ MINIMAX (Look ahead) ═══
-            val score = -minimax(boardAfterAI, depth - 1, Int.MIN_VALUE + 1, Int.MAX_VALUE, playerColor, aiColor)
-
-            if (score > bestScore) {
-                bestScore = score
-                bestMove = AIMove(move.first, move.second, bestScore, "")
+        } 
+        else {
+            // MEDIUM: 3-ply Minimax with random opening
+            if (board.size >= 31 && Math.random() < 0.8) {
+                val randomMove = aiMoves.random()
+                return AIMove(randomMove.first, randomMove.second, 0, "")
+            }
+            
+            var bestScore = Int.MIN_VALUE
+            val depth = 3
+            for (move in aiMoves) {
+                val boardAfterAI = applyMove(board, move.first, move.second)
+                if (isCheckmate(playerColor, boardAfterAI)) {
+                    return AIMove(move.first, move.second, Int.MAX_VALUE, checkmateTaunts.random())
+                }
+                val score = -minimax(boardAfterAI, depth - 1, Int.MIN_VALUE + 1, Int.MAX_VALUE, playerColor, aiColor)
+                if (score > bestScore) {
+                    bestScore = score
+                    bestMove = AIMove(move.first, move.second, bestScore, "")
+                }
             }
         }
 
